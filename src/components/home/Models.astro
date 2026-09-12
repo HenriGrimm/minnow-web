@@ -1,0 +1,301 @@
+---
+/**
+ * Models — spec §6.2 §6. "It runs on whatever you point it at." The
+ * three columns — Local / Cloud / Both — and the hardware-fit card:
+ * model name, size, quant, the fit bar on --mn-success / --mn-warning /
+ * --mn-danger, and the estimated tokens per second in mono.
+ *
+ * The pull quote is the honest line: the alternative to the fit score is
+ * downloading 40 GB to discover the model swaps.
+ */
+import Eyebrow from '../site/Eyebrow.astro';
+
+const columns = [
+  {
+    id: 'local',
+    label: 'Local',
+    line: 'llama.cpp and MLX built in. Multi-GPU layer split. Hugging Face downloads.',
+    chips: ['llama.cpp', 'MLX', 'multi-GPU', 'HF downloads'],
+  },
+  {
+    id: 'cloud',
+    label: 'Cloud',
+    line: 'Nine providers, your own key. OpenRouter, OpenAI, Groq, Mistral, Anthropic, DeepSeek, and three more.',
+    chips: ['9 providers', 'your key', 'no accounts', 'no limits'],
+  },
+  {
+    id: 'both',
+    label: 'Both',
+    line: 'Routing binds models to roles; routers pool capacity with slots, priority and failover.',
+    chips: ['role routing', 'routers', 'slots + priority', 'failover'],
+  },
+] as const;
+
+// The hardware-fit card. The fit value is what the score shows before the
+// download: 82 → success, 61 → warning, 34 → danger.
+const fit = {
+  model: 'Qwen3-Coder-30B',
+  size: '30B A3B',
+  quant: 'Q4_K_M',
+  bytes: '18.4 GB',
+  fit: 82,
+  fitStatus: 'fits' as const,
+  tps: '28 t/s',
+};
+---
+
+<section class="mn-section mn-section-hairline" aria-labelledby="models-heading">
+  <div class="mn-section-inner mn-models-inner">
+    <Eyebrow boxed>MODELS</Eyebrow>
+    <h2 id="models-heading" class="mn-models-h2">
+      It runs on whatever you point it at.
+    </h2>
+
+    <div class="mn-models-grid">
+      {
+        columns.map((col) => (
+          <div class="mn-models-col" data-models-col>
+            <span class="mn-models-col-label">{col.label}</span>
+            <p class="mn-models-col-line">{col.line}</p>
+            <ul class="mn-models-col-chips">
+              {col.chips.map((chip) => (
+                <li class="mn-models-chip">{chip}</li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+
+    <div class="mn-models-fit" data-models-fit>
+      <header class="mn-models-fit-head">
+        <span class="mn-models-fit-title">Hardware fit</span>
+        <span class="mn-models-fit-note">scored before the download</span>
+      </header>
+      <dl class="mn-models-fit-specs">
+        <div class="mn-models-fit-spec">
+          <dt class="mn-models-fit-key">model</dt>
+          <dd class="mn-models-fit-val">{fit.model}</dd>
+        </div>
+        <div class="mn-models-fit-spec">
+          <dt class="mn-models-fit-key">size</dt>
+          <dd class="mn-models-fit-val">{fit.size}</dd>
+        </div>
+        <div class="mn-models-fit-spec">
+          <dt class="mn-models-fit-key">quant</dt>
+          <dd class="mn-models-fit-val">{fit.quant}</dd>
+        </div>
+        <div class="mn-models-fit-spec">
+          <dt class="mn-models-fit-key">weight</dt>
+          <dd class="mn-models-fit-val">{fit.bytes}</dd>
+        </div>
+      </dl>
+      <div
+        class="mn-models-fitbar"
+        role="img"
+        aria-label={`Hardware fit: ${fit.fit} out of 100 — ${fit.fitStatus}`}
+      >
+        <div
+          class="mn-models-fitbar-fill"
+          data-fit-status="success"
+          style={`width: ${fit.fit}%`}
+        ></div>
+      </div>
+      <div class="mn-models-fitbar-row">
+        <span class="mn-models-fitbar-pct">{fit.fit} / 100</span>
+        <span class="mn-models-fitbar-tps">{fit.tps} est.</span>
+      </div>
+    </div>
+
+    <blockquote class="mn-models-quote">
+      <p>
+        The alternative is downloading 40 GB to discover it swaps.
+      </p>
+    </blockquote>
+  </div>
+</section>
+
+<style>
+  /* stylelint-disable custom-property-empty-line-before, declaration-empty-line-before */
+
+  .mn-models-inner {
+    max-width: 900px;
+  }
+
+  .mn-models-h2 {
+    margin: 0 0 40px;
+    font-size: var(--fs-h2);
+    font-weight: 600;
+    letter-spacing: var(--tracking-title);
+    line-height: var(--lh-title);
+  }
+
+  /* ---------- The three columns ---------- */
+
+  .mn-models-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  @media (width <= 700px) {
+    .mn-models-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+  }
+
+  .mn-models-col {
+    padding: 18px;
+    background: color-mix(in srgb, var(--mn-fg) 1.5%, var(--mn-bg));
+    border: 1px solid var(--mn-border);
+    border-radius: var(--radius-md);
+  }
+
+  .mn-models-col-label {
+    display: block;
+    margin-bottom: 8px;
+    font: 600 var(--fs-label)/1.3 var(--font-mono);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--mn-fg-muted);
+  }
+
+  .mn-models-col-line {
+    margin: 0 0 14px;
+    font-size: var(--fs-small);
+    line-height: var(--lh-body);
+    color: var(--mn-fg-muted);
+  }
+
+  .mn-models-col-chips {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .mn-models-chip {
+    padding: 3px 8px;
+    font: 400 var(--fs-mono-sm)/1.3 var(--font-mono);
+    color: var(--mn-fg-muted);
+    background: var(--mn-surface-0);
+    border: 1px solid var(--mn-border);
+    border-radius: var(--radius-sm);
+  }
+
+  /* ---------- The hardware-fit card ---------- */
+
+  .mn-models-fit {
+    margin-top: 24px;
+    padding: 20px 22px;
+    background: var(--mn-surface-0);
+    border: 1px solid var(--mn-border-strong);
+    border-radius: var(--radius-lg);
+  }
+
+  .mn-models-fit-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 14px;
+  }
+
+  .mn-models-fit-title {
+    font-size: var(--fs-small);
+    font-weight: 600;
+    letter-spacing: var(--tracking-title);
+  }
+
+  .mn-models-fit-note {
+    font: 400 var(--fs-mono-sm)/1.3 var(--font-mono);
+    color: var(--mn-fg-subtle);
+  }
+
+  .mn-models-fit-specs {
+    margin: 0 0 14px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+
+  @media (width <= 700px) {
+    .mn-models-fit-specs {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .mn-models-fit-spec {
+    min-width: 0;
+  }
+
+  .mn-models-fit-key {
+    margin-bottom: 3px;
+    font: 400 var(--fs-label)/1.3 var(--font-mono);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--mn-fg-subtle);
+  }
+
+  .mn-models-fit-val {
+    margin: 0;
+    font: 400 var(--fs-mono-sm)/1.4 var(--font-mono);
+    color: var(--mn-fg);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mn-models-fitbar {
+    height: 8px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--mn-fg) 8%, var(--mn-bg));
+    border-radius: 4px;
+  }
+
+  .mn-models-fitbar-fill {
+    height: 100%;
+    border-radius: 4px;
+  }
+
+  /* The fit status colours — success / warning / danger per spec. */
+  .mn-models-fitbar-fill[data-fit-status='success'] { background: var(--mn-success); }
+  .mn-models-fitbar-fill[data-fit-status='warning'] { background: var(--mn-warning); }
+  .mn-models-fitbar-fill[data-fit-status='danger'] { background: var(--mn-danger); }
+
+  .mn-models-fitbar-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 8px;
+  }
+
+  .mn-models-fitbar-pct,
+  .mn-models-fitbar-tps {
+    font: 400 var(--fs-mono-sm)/1.3 var(--font-mono);
+    color: var(--mn-fg-muted);
+  }
+
+  .mn-models-fitbar-tps {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- The pull quote ---------- */
+
+  .mn-models-quote {
+    margin: 36px 0 0;
+    max-width: var(--prose);
+  }
+
+  .mn-models-quote p {
+    margin: 0;
+    font-size: var(--fs-lead);
+    line-height: var(--lh-body);
+    font-style: italic;
+    color: var(--mn-fg-muted);
+  }
+</style>

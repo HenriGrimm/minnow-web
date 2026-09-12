@@ -1,0 +1,348 @@
+---
+/**
+ * DeepDives — spec §6.2 §5. The app deep-dives: seven alternating
+ * one-viewport sections in spec order (Code → Source Control →
+ * Orchestrator → Models → Brain → Issues → Scheduler). Each panel carries
+ * the mono eyebrow, the declarative H2, 2–3 sentences, the 3–4 mono
+ * chips, and its screenshot in the AppFrame-style window chrome.
+ *
+ * Static alternating layout for now — the pin (sticky viewport per
+ * section, cross-fade on scroll) arrives in a later wave.
+ *
+ * The Code section carries the W5-E mount slot: `#deepdives-code-demo`
+ * — the Quick Edit demo drops in next to the copy and takes the
+ * screenshot's place in the DOM (the screenshot stays as the no-JS
+ * first paint).
+ */
+import { Image } from 'astro:assets';
+import Eyebrow from '../site/Eyebrow.astro';
+import Glyph from '../icons/Glyph.astro';
+import shotCode from '../../assets/screenshots/app-code.png';
+import shotSourceControl from '../../assets/screenshots/app-source-control.png';
+import shotOrchestrator from '../../assets/screenshots/app-orchestrator.png';
+import shotModels from '../../assets/screenshots/app-models.png';
+import shotBrain from '../../assets/screenshots/app-brain.png';
+import shotIssues from '../../assets/screenshots/app-issues.png';
+import shotScheduler from '../../assets/screenshots/app-scheduler.png';
+
+interface Shot {
+  src: any;
+  alt: string;
+  name: string;
+}
+
+interface Dive {
+  id: string;
+  eyebrow: string;
+  heading: string;
+  body: string;
+  chips: readonly string[];
+  shot: Shot;
+  /** True for the Code panel — the screenshot renders in the demo slot
+   *  so the W5-E mount point carries the no-JS first paint. */
+  demoSlot?: boolean;
+}
+
+const dives: readonly Dive[] = [
+  {
+    id: 'code',
+    eyebrow: '01 · Code',
+    heading: 'The editor is the agent, and the agent is the editor.',
+    body:
+      'LSP, inline completion, Quick Edit, a terminal, dev servers, and a Chromium preview — with chat running over the same repo, not a sidecar. The agent edits what you are looking at, in the same file, and the diff lands before you decide.',
+    chips: ['LSP', 'inline completion', 'Quick Edit', 'terminal'],
+    shot: { src: shotCode, alt: 'The Code surface — editor, Quick Edit, and chat over the same repo', name: 'Code' },
+    demoSlot: true,
+  },
+  {
+    id: 'source-control',
+    eyebrow: '02 · Source Control',
+    heading: 'Your git history, reviewed the way you already do.',
+    body:
+      'Changes, history, branches, stashes, worktrees, PRs and CI — all through your own gh. The agent files commits and pull requests alongside you, and the review queue stays yours to clear.',
+    chips: ['changes', 'branches', 'worktrees', 'PRs + CI'],
+    shot: { src: shotSourceControl, alt: 'The Source Control Center — changes, branches, and pull requests', name: 'Source Control' },
+  },
+  {
+    id: 'orchestrator',
+    eyebrow: '03 · Orchestrator',
+    heading: 'Plan, then waves of builders you can watch.',
+    body:
+      'Boards inside Code: the idea becomes a plan, the plan becomes waves of Builder and Tester agents in isolated worktrees, and the merge is yours to approve. Every step shows on the board, and nothing runs against your checkout.',
+    chips: ['plan → waves', 'Builder + Tester', 'worktrees', 'merge on approval'],
+    shot: { src: shotOrchestrator, alt: 'The Orchestrator board — plan waves with Builder and Tester agents', name: 'Orchestrator' },
+  },
+  {
+    id: 'models',
+    eyebrow: '04 · Models',
+    heading: 'Point it at whatever runs on your machine.',
+    body:
+      'Hardware-fit scoring tells you before you download which quant fits which machine. Hugging Face downloads, llama.cpp and MLX serving, providers, per-role routing, and usage and cost — one rail, local or cloud.',
+    chips: ['hardware fit', 'HF downloads', 'llama-server', 'per-role routing'],
+    shot: { src: shotModels, alt: 'The Models rail — providers, hardware-fit scores, and per-role routing', name: 'Models' },
+  },
+  {
+    id: 'brain',
+    eyebrow: '05 · Brain',
+    heading: 'The context the loop learns lives here.',
+    body:
+      'A Markdown wiki with semantic recall, a code index, and memories the agent can read and write. Everything the workspace learns lands in the Brain, and every future step reads from it.',
+    chips: ['Markdown wiki', 'semantic recall', 'code index', 'memories'],
+    shot: { src: shotBrain, alt: 'The Brain — Markdown wiki, semantic recall, and memories', name: 'Brain' },
+  },
+  {
+    id: 'issues',
+    eyebrow: '06 · Issues',
+    heading: 'What the agent finds becomes an issue.',
+    body:
+      'List, board, triage, and saved views — with issue tools the agent files to itself, so nothing is lost between sessions.',
+    chips: ['list + board', 'triage', 'saved views', 'self-filed'],
+    shot: { src: shotIssues, alt: 'The Issues surface — board, triage, and saved views', name: 'Issues' },
+  },
+  {
+    id: 'scheduler',
+    eyebrow: '07 · Scheduler',
+    heading: 'Recurring agent jobs, with run history.',
+    body:
+      'Recurring agent jobs with run history, scoped to the workspace — the job, its next run, and what it did. /loop for the cadence, /goal for the target.',
+    chips: ['run history', 'workspace scope', '/loop', '/goal'],
+    shot: { src: shotScheduler, alt: 'The Scheduler — recurring agent jobs with run history', name: 'Scheduler' },
+  },
+] as const;
+---
+
+<section class="mn-section mn-section-hairline" aria-labelledby="deepdives-heading">
+  <div class="mn-section-inner mn-deepdives-inner">
+    <div class="mn-deepdives-head">
+      <Eyebrow boxed>THE APP, SURFACE BY SURFACE</Eyebrow>
+      <h2 id="deepdives-heading" class="mn-deepdives-h2">
+        One workspace. Seven surfaces.
+      </h2>
+      <p class="mn-deepdives-lead">
+        Each surface is a full tool on its own — and the same workspace
+        underneath, so what one learns, the others read.
+      </p>
+    </div>
+
+    {
+      dives.map((dive, i) => (
+        <article
+          class={`mn-dive ${i % 2 === 0 ? 'mn-dive-flip' : ''}`}
+          id={`deepdives-${dive.id}`}
+          data-deepdive
+          aria-labelledby={`deepdives-${dive.id}-heading`}
+        >
+          <div class="mn-dive-copy">
+            <Eyebrow boxed>{dive.eyebrow}</Eyebrow>
+            <h3 id={`deepdives-${dive.id}-heading`} class="mn-dive-h3">{dive.heading}</h3>
+            <p class="mn-dive-body">{dive.body}</p>
+            <ul class="mn-dive-chips">
+              {dive.chips.map((chip) => (
+                <li class="mn-dive-chip">{chip}</li>
+              ))}
+            </ul>
+          </div>
+          <figure class="mn-dive-shot">
+            <div
+              class="mn-dive-shot-frame"
+              {...(dive.demoSlot ? { 'data-deepdives-code-demo-slot': true } : {})}
+            >
+              <header class="mn-dive-shot-chrome">
+                <div class="mn-dive-shot-lights" aria-hidden="true">
+                  <span class="mn-dive-shot-light is-close"></span>
+                  <span class="mn-dive-shot-light is-min"></span>
+                  <span class="mn-dive-shot-light is-max"></span>
+                </div>
+                <span class="mn-dive-shot-workspace">
+                  <Glyph size={14} />
+                  <span>{dive.shot.name}</span>
+                </span>
+              </header>
+              {/* W5-E mount slot: the Quick Edit demo mounts into
+                  #deepdives-code-demo and takes over the frame body.
+                  The screenshot stays as the no-JS first paint. */}
+              <div
+                class="mn-dive-shot-img"
+                {...(dive.demoSlot ? { id: 'deepdives-code-demo' } : {})}
+              >
+                <Image
+                  src={dive.shot.src}
+                  alt={dive.shot.alt}
+                  width={1600}
+                  height={875}
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+            </div>
+          </figure>
+        </article>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  /* stylelint-disable custom-property-empty-line-before, declaration-empty-line-before */
+
+  .mn-deepdives-inner {
+    max-width: var(--container-wide);
+  }
+
+  .mn-deepdives-head {
+    margin-bottom: 72px;
+  }
+
+  .mn-deepdives-h2 {
+    margin: 0 0 16px;
+    font-size: var(--fs-h2);
+    font-weight: 600;
+    letter-spacing: var(--tracking-title);
+    line-height: var(--lh-title);
+  }
+
+  .mn-deepdives-lead {
+    margin: 0;
+    max-width: var(--prose);
+    font-size: var(--fs-lead);
+    line-height: var(--lh-body);
+    color: var(--mn-fg-muted);
+  }
+
+  /* ---------- The seven panels ---------- */
+
+  .mn-dive {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: 48px 64px;
+    align-items: center;
+    padding: 56px 0;
+  }
+
+  /* Alternating layout — even panels (0, 2, 4, 6) flip the copy to the
+     right so the screens read left-right-left-right. */
+  .mn-dive-flip .mn-dive-copy {
+    order: 2;
+  }
+
+  .mn-dive-flip .mn-dive-shot {
+    order: 1;
+  }
+
+  @media (width <= 900px) {
+    .mn-dive,
+    .mn-dive-flip {
+      grid-template-columns: 1fr;
+      gap: 32px;
+      padding: 40px 0;
+    }
+
+    .mn-dive-flip .mn-dive-copy {
+      order: 1;
+    }
+
+    .mn-dive-flip .mn-dive-shot {
+      order: 2;
+    }
+  }
+
+  .mn-dive-h3 {
+    margin: 0 0 14px;
+    font-size: var(--fs-h3);
+    font-weight: 600;
+    letter-spacing: var(--tracking-title);
+    line-height: var(--lh-title);
+  }
+
+  .mn-dive-body {
+    margin: 0 0 20px;
+    max-width: var(--prose);
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
+    color: var(--mn-fg-muted);
+  }
+
+  .mn-dive-chips {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .mn-dive-chip {
+    padding: 4px 10px;
+    font: 400 var(--fs-mono-sm)/1.3 var(--font-mono);
+    color: var(--mn-fg-muted);
+    background: var(--mn-surface-0);
+    border: 1px solid var(--mn-border);
+    border-radius: var(--radius-sm);
+  }
+
+  /* ---------- The screenshot in AppFrame-style window chrome ---------- */
+
+  .mn-dive-shot {
+    margin: 0;
+  }
+
+  .mn-dive-shot-frame {
+    overflow: hidden;
+    background: var(--mn-bg);
+    border: 1px solid var(--mn-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+  }
+
+  .mn-dive-shot-chrome {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 40px;
+    padding: 0 14px;
+    background: var(--mn-surface-0);
+    border-bottom: 1px solid var(--mn-border);
+  }
+
+  .mn-dive-shot-lights {
+    display: inline-flex;
+    gap: 6px;
+  }
+
+  .mn-dive-shot-light {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--mn-fg) 18%, transparent);
+  }
+
+  .mn-dive-shot-light.is-close { background: var(--mn-danger); }
+  .mn-dive-shot-light.is-min { background: var(--mn-warning); }
+  .mn-dive-shot-light.is-max { background: var(--mn-success); }
+
+  .mn-dive-shot-workspace {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: var(--tracking-title);
+    color: var(--mn-fg-muted);
+  }
+
+  .mn-dive-shot-workspace svg {
+    color: var(--mn-accent-ink);
+  }
+
+  .mn-dive-shot-img {
+    aspect-ratio: 16 / 9;
+    background: var(--mn-surface-0);
+  }
+
+  .mn-dive-shot-img img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+</style>

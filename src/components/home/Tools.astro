@@ -1,0 +1,402 @@
+---
+/**
+ * Tools — spec §6.2 §7. "Agents and tools." A flat bordered bento grid of
+ * exactly six cards:
+ *   1. Permissions — the 105 built-in tools as tiny mono tiles (static set;
+ *      the stagger + Full→Ask→Off toggles are the W5 motion work), with the
+ *      spec caption
+ *   2. Sub-agents — 8 types, with the no-nested-spawn constraint stated
+ *      plainly
+ *   3. Modes — 4 in the composer, with the Plan-mode payload line
+ *   4. Skills — 19 built in, `/` in the composer
+ *   5. MCP — tools arrive as mcp__<server>__<tool>, Context7 on by default
+ *   6. Worktrees — every board task gets its own checkout and branch
+ *
+ * The tile set and skill set are the sanctioned lists (spec §1.5: 105 tiles,
+ * 8, 4, 19) — rendered as-is so the DOM count is verifiable.
+ */
+import Eyebrow from '../site/Eyebrow.astro';
+
+// The 105 built-in tools (spec §1.5), in catalog order — server/tools/
+// builtin-catalog.js. The DOM count is what the spec checks.
+const TILES = [
+  'get_datetime', 'calculate', 'web_search', 'wikipedia_search', 'fetch_web_content',
+  'rag_web_content', 'read_clipboard', 'write_clipboard', 'get_system_info', 'ask_question',
+  'set_chat_mode', 'create_chat_with_mode', 'launch_minnow_app', 'propose_mode_switch',
+  'list_directory', 'read_file', 'read_document', 'read_file_range', 'save_file', 'append_file',
+  'insert_at_line', 'replace_text_in_file', 'search_in_file', 'grep', 'make_directory',
+  'move_file', 'copy_file', 'delete_path', 'find_files', 'get_file_metadata', 'create_pdf',
+  'create_spreadsheet', 'create_word_document',
+  'git_status', 'git_diff', 'git_log', 'git_add', 'git_commit', 'git_checkout', 'git_branch',
+  'execute_command', 'read_command_log', 'list_running_commands', 'stop_command',
+  'start_background_command', 'stop_background_command', 'manage_dev_servers',
+  'run_javascript', 'run_python',
+  'spawn_sub_agent', 'todo_write',
+  'issue_add', 'issue_search', 'issue_comment', 'issue_assign', 'issue_unlink', 'issue_move',
+  'issue_update', 'issue_get_state', 'issue_link', 'issue_delete',
+  'cancel_sub_agent', 'list_sub_agents', 'get_sub_agent_status',
+  'browser_reserve_tab', 'browser_release_tab', 'browser_list', 'browser_navigate',
+  'request_browser_origin_access', 'browser_new_tab', 'browser_switch_tab', 'browser_close_tab',
+  'browser_snapshot', 'browser_click', 'browser_fill', 'browser_eval', 'browser_screenshot',
+  'load_impeccable_context', 'load_aesthetics_reference', 'run_impeccable',
+  'recall_chat_context', 'recall_turn_full',
+  'brain_search', 'brain_read_page', 'brain_list',
+  'minnow_docs_search', 'minnow_docs_read', 'minnow_docs_list',
+  'brain_write_page', 'brain_append_log', 'brain_ingest_source', 'manage_brain',
+  'search_settings', 'read_diagnostics', 'get_settings', 'update_settings',
+  'get_appearance', 'update_appearance', 'upload_appearance_asset', 'save_memory',
+  'repo_map', 'find_symbol', 'who_calls', 'read_symbol', 'get_lsp_diagnostics',
+] as const;
+
+const PERMISSIONS_CAPTION =
+  '105 built-in tools. Each one can be Full, Ask, or Off, on the principle that a program able to run shell commands should occasionally check in.';
+
+const SUB_AGENTS = [
+  'Builder', 'Tester', 'Reviewer', 'Planner', 'Researcher', 'Documenter', 'Migrator', 'Auditor',
+] as const;
+
+const SUB_AGENT_CONSTRAINT = 'No sub-agent can spawn further sub-agents.';
+
+// 4 in the composer (spec §1.5). The payload line is the spec's own.
+const modes = [
+  {
+    id: 'general',
+    name: 'General',
+    line: 'Everyday Q&A and brainstorming, with approval before each run.',
+  },
+  {
+    id: 'build',
+    name: 'Build',
+    line: 'Default development mode with broad tool access.',
+  },
+  {
+    id: 'plan',
+    name: 'Plan',
+    line: 'A mode swaps the system prompt and the tool list. Plan mode does not merely ask the model to avoid editing your files; the editing tools are not in the payload.',
+  },
+  {
+    id: 'debug',
+    name: 'Debug',
+    line: 'Investigate issues and root causes; file and triage via Issues.',
+  },
+] as const;
+
+// The 19 built-in skills (spec §1.5) — src/skills/builtin-manifest.json.
+const SKILLS = [
+  'ask-user', 'browser-automation', 'caveman', 'code-review', 'create-pr',
+  'debug-error', 'docs-update', 'explain-code', 'fix-ci', 'git-setup',
+  'git-commit', 'impeccable', 'orchestrate-plan', 'partymode', 'plan-work',
+  'refactor-safe', 'security-review', 'ui-designer', 'write-tests',
+] as const;
+
+const MCP_NAME = 'mcp__<server>__<tool>';
+const MCP_LINE = 'Any server. Tools arrive as a name like the one above — Context7 is on by default.';
+
+const WORKTREES_LINE = 'Every board task gets its own checkout and branch.';
+---
+
+<section class="mn-section mn-section-hairline" aria-labelledby="tools-heading">
+  <div class="mn-section-inner mn-tools-inner">
+    <Eyebrow boxed>AGENTS & TOOLS</Eyebrow>
+    <h2 id="tools-heading" class="mn-tools-h2">
+      The agent's hands, and the rules around them.
+    </h2>
+    <p class="mn-tools-lead">
+      One tool set, shared by every surface. Everything below is named in
+      the log, revocable in settings, and scoped to the workspace.
+    </p>
+
+    <div class="mn-tools-bento">
+      {/* 1 — Permissions (wide): the 105 tool tiles, static */}
+      <div class="mn-tools-card mn-tools-card-wide" data-tools-card="permissions">
+        <header class="mn-tools-card-head">
+          <span class="mn-tools-card-num">105</span>
+          <h3 class="mn-tools-card-title">Permissions</h3>
+        </header>
+        <ul class="mn-tools-tiles" data-tools-tiles>
+          {TILES.map((tile) => (
+            <li class="mn-tools-tile" title={tile}>{tile}</li>
+          ))}
+        </ul>
+        <p class="mn-tools-card-caption">{PERMISSIONS_CAPTION}</p>
+      </div>
+
+      {/* 2 — Sub-agents */}
+      <div class="mn-tools-card" data-tools-card="sub-agents">
+        <header class="mn-tools-card-head">
+          <span class="mn-tools-card-num">8</span>
+          <h3 class="mn-tools-card-title">Sub-agents</h3>
+        </header>
+        <ul class="mn-tools-list">
+          {SUB_AGENTS.map((name) => (
+            <li class="mn-tools-list-item">{name}</li>
+          ))}
+        </ul>
+        <p class="mn-tools-card-caption">{SUB_AGENT_CONSTRAINT}</p>
+      </div>
+
+      {/* 3 — Modes */}
+      <div class="mn-tools-card" data-tools-card="modes">
+        <header class="mn-tools-card-head">
+          <span class="mn-tools-card-num">4</span>
+          <h3 class="mn-tools-card-title">Modes</h3>
+        </header>
+        <ul class="mn-tools-list">
+          {modes.map((mode) => (
+            <li class="mn-tools-list-item">
+              <span class="mn-tools-mode-name">{mode.name}</span>
+              <span class="mn-tools-mode-line">{mode.line}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* 4 — Skills */}
+      <div class="mn-tools-card" data-tools-card="skills">
+        <header class="mn-tools-card-head">
+          <span class="mn-tools-card-num">19</span>
+          <h3 class="mn-tools-card-title">Skills</h3>
+        </header>
+        <ul class="mn-tools-chips">
+          {SKILLS.map((skill) => (
+            <li class="mn-tools-chip">{skill}</li>
+          ))}
+        </ul>
+        <p class="mn-tools-card-caption">19 built in, invoked with `/` in the composer.</p>
+      </div>
+
+      {/* 5 — MCP */}
+      <div class="mn-tools-card" data-tools-card="mcp">
+        <header class="mn-tools-card-head">
+          <h3 class="mn-tools-card-title">MCP</h3>
+        </header>
+        <code class="mn-tools-mcp-name">{MCP_NAME}</code>
+        <p class="mn-tools-card-caption">{MCP_LINE}</p>
+      </div>
+
+      {/* 6 — Worktrees */}
+      <div class="mn-tools-card" data-tools-card="worktrees">
+        <header class="mn-tools-card-head">
+          <h3 class="mn-tools-card-title">Worktrees</h3>
+        </header>
+        <p class="mn-tools-worktrees-line">{WORKTREES_LINE}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* stylelint-disable custom-property-empty-line-before, declaration-empty-line-before */
+
+  .mn-tools-inner {
+    max-width: var(--container-wide);
+  }
+
+  .mn-tools-h2 {
+    margin: 0 0 16px;
+    font-size: var(--fs-h2);
+    font-weight: 600;
+    letter-spacing: var(--tracking-title);
+    line-height: var(--lh-title);
+  }
+
+  .mn-tools-lead {
+    margin: 0 0 48px;
+    max-width: var(--prose);
+    font-size: var(--fs-lead);
+    line-height: var(--lh-body);
+    color: var(--mn-fg-muted);
+  }
+
+  /* ---------- The flat bordered bento: exactly six cards ---------- */
+
+  .mn-tools-bento {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  /* Card spans: card 1 wide (2×2), the other five 1×1 — 2×2 + 5×1 filling
+     a 4×3 grid. Six cards, exactly. */
+  .mn-tools-card-wide {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+
+  @media (width <= 900px) {
+    .mn-tools-bento {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (width <= 600px) {
+    .mn-tools-bento {
+      grid-template-columns: 1fr;
+    }
+
+    .mn-tools-card-wide {
+      grid-column: span 1;
+      grid-row: span 1;
+    }
+  }
+
+  .mn-tools-card {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    background: color-mix(in srgb, var(--mn-fg) 1.5%, var(--mn-bg));
+    border: 1px solid var(--mn-border);
+    border-radius: var(--radius-lg);
+  }
+
+  .mn-tools-card-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .mn-tools-card-num {
+    font: 600 var(--fs-h3)/1 var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    color: var(--mn-accent);
+  }
+
+  .mn-tools-card-title {
+    margin: 0;
+    font-size: var(--fs-small);
+    font-weight: 600;
+    letter-spacing: var(--tracking-title);
+  }
+
+  .mn-tools-card-caption {
+    margin: 14px 0 0;
+    font-size: var(--fs-small);
+    line-height: var(--lh-body);
+    color: var(--mn-fg-muted);
+  }
+
+  /* ---------- Card 1: the 105 permission tiles ---------- */
+
+  .mn-tools-tiles {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    flex: 1;
+    align-content: start;
+  }
+
+  @media (width <= 900px) {
+    .mn-tools-tiles {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  @media (width <= 600px) {
+    .mn-tools-tiles {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .mn-tools-tile {
+    padding: 5px 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font: 400 11px/1.4 var(--font-mono);
+    letter-spacing: -0.01em;
+    color: var(--mn-fg-muted);
+    background: var(--mn-surface-0);
+    border: 1px solid var(--mn-border);
+    border-radius: var(--radius-sm);
+  }
+
+  /* ---------- Cards 2–4: lists and chips ---------- */
+
+  .mn-tools-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+
+  .mn-tools-list-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--mn-border);
+    font-size: var(--fs-small);
+  }
+
+  .mn-tools-list-item:first-child {
+    padding-top: 0;
+  }
+
+  .mn-tools-list-item:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .mn-tools-mode-name {
+    font-weight: 600;
+    letter-spacing: var(--tracking-title);
+  }
+
+  .mn-tools-mode-line {
+    font-size: var(--fs-small);
+    color: var(--mn-fg-muted);
+    line-height: var(--lh-body);
+  }
+
+  .mn-tools-chips {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    flex: 1;
+    align-content: start;
+  }
+
+  .mn-tools-chip {
+    padding: 4px 10px;
+    font: 400 var(--fs-mono-sm)/1.3 var(--font-mono);
+    color: var(--mn-fg-muted);
+    background: var(--mn-surface-0);
+    border: 1px solid var(--mn-border);
+    border-radius: var(--radius-sm);
+  }
+
+  /* ---------- Card 5: MCP ---------- */
+
+  .mn-tools-mcp-name {
+    margin: 0 0 4px;
+    padding: 10px 12px;
+    align-self: flex-start;
+    max-width: 100%;
+    overflow-x: auto;
+    font: 400 var(--fs-mono-sm)/1.4 var(--font-mono);
+    color: var(--mn-syntax-inline);
+    background: var(--mn-surface-0);
+    border: 1px solid var(--mn-border);
+    border-radius: var(--radius-sm);
+  }
+
+  /* ---------- Card 6: Worktrees ---------- */
+
+  .mn-tools-worktrees-line {
+    margin: 0;
+    flex: 1;
+    font-size: var(--fs-small);
+    line-height: var(--lh-body);
+    color: var(--mn-fg-muted);
+  }
+</style>
