@@ -525,10 +525,6 @@
   border-color: var(--mn-accent);
 }
 
-.app-filecard-btn.is-primary svg {
-  color: var(--mn-fg-on-accent);
-}
-
 /* ---------- Composer ---------- */
 .app-composer {
   flex-shrink: 0;
@@ -644,6 +640,13 @@
 
 .app-composer-send:active {
   transform: scale(0.97);
+}
+
+/* Declared after the Composer rules so its (0,2,1) specificity is the
+   file's final `svg` leaf; a lower-specificity `svg` rule must never
+   follow it (stylelint no-descending-specificity). */
+.app-filecard-btn.is-primary svg {
+  color: var(--mn-fg-on-accent);
 }
 
 /* ---------- Status bar ---------- */
