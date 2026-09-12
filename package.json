@@ -7,7 +7,9 @@
     "dev": "astro dev",
     "sync:minnow": "node scripts/sync-minnow.mjs --repo HenriGrimm/Minnow --ref main",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "build:brand": "node scripts/build-brand-assets.mjs",
+    "prebuild": "node scripts/build-brand-assets.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.3.0",

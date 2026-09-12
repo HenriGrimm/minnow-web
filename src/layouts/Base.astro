@@ -16,7 +16,13 @@ import Footer from '../components/site/Footer.astro';
     <meta name="description" content="Minnow — a full agentic development workspace. Open source, and completely yours." />
     <meta name="theme-color" content="#0f0f0f" />
     <link rel="canonical" href="https://minnow.sh/" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- Brand favicon set (spec §5.3). All five live in /brand/ and are
+         theme-independent — the SVG favicon carries a prefers-color-scheme
+         swap; the raster tiles bake the brand black. -->
+    <link rel="icon" type="image/svg+xml" href="/brand/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/brand/icon-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/brand/icon-512.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/brand/apple-touch-icon.png" />
     <!-- Flash guard — render-blocking, spec §7.4. The background map keeps the
          first paint the right colour before the CSS arrives; the apply order
          (no-transition → data-theme + colorScheme → two rAFs → theme-ready)

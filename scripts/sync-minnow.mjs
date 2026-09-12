@@ -16,7 +16,7 @@
  * (Docs transforms + nav validation land in W7-A.)
  */
 
-import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -166,16 +166,47 @@ if (existsSync(imagesDir)) {
 }
 
 // --- public/logos/** → public/brand/ ------------------------------------------
+// The sync wipes public/brand/ so upstream assets stay current, but the site
+// authors its own brand SVGs there (favicon.svg, glyph-black.svg,
+// lockup-horizontal.svg — spec §5.3). Move those out, refresh the upstream
+// logos, then move them back so both sets coexist.
 
-const logosDir = join(archive, 'public', 'logos');
+// The site authors its own brand SVGs (favicon.svg, glyph-black.svg,
+// lockup-horizontal.svg — spec §5.3) into public/brand/. The sync wipes that
+// dir to keep upstream logos current, so move the site SVGs out first, to a
+// temp dir outside public/brand/ (so the cpSync below can't copy them), then
+// restore them after the upstream logos land.
+const SITE_BRAND_FILES = ['favicon.svg', 'glyph-black.svg', 'lockup-horizontal.svg'];
 const brandDir = join(root, 'public', 'brand');
+const siteBrandTmp = join(root, 'public', '_site-brand');
+const keptBrand = [];
+if (existsSync(brandDir)) {
+  for (const name of SITE_BRAND_FILES) {
+    const from = join(brandDir, name);
+    if (existsSync(from)) {
+      const to = join(siteBrandTmp, name);
+      mkdirSync(siteBrandTmp, { recursive: true });
+      renameSync(from, to);
+      keptBrand.push(name);
+    }
+  }
+}
+const logosDir = join(archive, 'public', 'logos');
 if (existsSync(logosDir)) {
   rmSync(brandDir, { recursive: true, force: true });
   cpSync(logosDir, brandDir, { recursive: true });
   console.log('sync-minnow: synced public/logos → public/brand');
 } else {
+  mkdirSync(brandDir, { recursive: true });
   console.log('sync-minnow: no public/logos in archive, skipped');
 }
+for (const name of keptBrand) {
+  renameSync(join(siteBrandTmp, name), join(brandDir, name));
+}
+if (existsSync(siteBrandTmp)) {
+  rmSync(siteBrandTmp, { recursive: true, force: true });
+}
+console.log(`sync-minnow: preserved ${keptBrand.length} site-authored brand SVG(s)`);
 
 // --- cleanup -------------------------------------------------------------------
 

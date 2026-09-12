@@ -1,0 +1,83 @@
+---
+import Base from '../layouts/Base.astro';
+import Glyph from '../components/icons/Glyph.astro';
+import CodeIcon from '../components/icons/CodeIcon.astro';
+import SourceControlIcon from '../components/icons/SourceControlIcon.astro';
+import ModelsIcon from '../components/icons/ModelsIcon.astro';
+import BrainIcon from '../components/icons/BrainIcon.astro';
+import IssuesIcon from '../components/icons/IssuesIcon.astro';
+import SchedulerIcon from '../components/icons/SchedulerIcon.astro';
+import SettingsIcon from '../components/icons/SettingsIcon.astro';
+import NewChatIcon from '../components/icons/NewChatIcon.astro';
+import AttachIcon from '../components/icons/AttachIcon.astro';
+import MicIcon from '../components/icons/MicIcon.astro';
+import SparkleIcon from '../components/icons/SparkleIcon.astro';
+import SendFishIcon from '../components/icons/SendFishIcon.astro';
+import GithubIcon from '../components/icons/GithubIcon.astro';
+import DiscordIcon from '../components/icons/DiscordIcon.astro';
+import CopyIcon from '../components/icons/CopyIcon.astro';
+import CaretIcon from '../components/icons/CaretIcon.astro';
+import HamburgerIcon from '../components/icons/HamburgerIcon.astro';
+import CloseIcon from '../components/icons/CloseIcon.astro';
+import SearchIcon from '../components/icons/SearchIcon.astro';
+import SunIcon from '../components/icons/SunIcon.astro';
+import MoonIcon from '../components/icons/MoonIcon.astro';
+import AutoIcon from '../components/icons/AutoIcon.astro';
+---
+<Base>
+  <main class="min-h-screen">
+    <section class="mx-auto max-w-3xl px-6 py-24">
+      <h1 class="text-3xl font-semibold tracking-[-0.02em]">Icons</h1>
+      <p class="mt-3 text-sm text-fg-muted">
+        Inline SVGs, 24×24, <code class="font-mono">stroke="currentColor"</code>. They inherit the theme —
+        flip <code class="font-mono">data-theme</code> on <code class="font-mono"><html></code> and they recolour.
+      </p>
+
+      <h2 class="mt-12 mb-4 text-xs font-semibold uppercase tracking-[0.06em] text-fg-muted">Rail</h2>
+      <ul class="grid grid-cols-4 gap-4 sm:grid-cols-7">
+        <li><CodeIcon /><span class="sr-only">Code</span></li>
+        <li><SourceControlIcon /><span class="sr-only">Source Control</span></li>
+        <li><ModelsIcon /><span class="sr-only">Models</span></li>
+        <li><BrainIcon /><span class="sr-only">Brain</span></li>
+        <li><IssuesIcon /><span class="sr-only">Issues</span></li>
+        <li><SchedulerIcon /><span class="sr-only">Scheduler</span></li>
+        <li><SettingsIcon /><span class="sr-only">Settings</span></li>
+      </ul>
+      <p class="mt-3 text-xs text-fg-subtle">SendFish, 180° for the send button — the app keeps the fish pointing along the direction of send:</p>
+      <ul class="mt-2 flex gap-4">
+        <li><SendFishIcon size={24} /></li>
+        <li style="display:inline-flex; transform:rotate(180deg);"><SendFishIcon size={24} /></li>
+      </ul>
+
+      <h2 class="mt-12 mb-4 text-xs font-semibold uppercase tracking-[0.06em] text-fg-muted">Chrome</h2>
+      <ul class="grid grid-cols-6 gap-4 sm:grid-cols-8">
+        <li><NewChatIcon /><span class="sr-only">New chat</span></li>
+        <li><AttachIcon /><span class="sr-only">Attach</span></li>
+        <li><MicIcon /><span class="sr-only">Mic</span></li>
+        <li><SparkleIcon /><span class="sr-only">Sparkle</span></li>
+        <li><SendFishIcon /><span class="sr-only">Send</span></li>
+        <li><GithubIcon /><span class="sr-only">GitHub</span></li>
+        <li><DiscordIcon /><span class="sr-only">Discord</span></li>
+        <li><CopyIcon /><span class="sr-only">Copy</span></li>
+        <li><CaretIcon /><span class="sr-only">Caret</span></li>
+        <li><HamburgerIcon /><span class="sr-only">Menu</span></li>
+        <li><CloseIcon /><span class="sr-only">Close</span></li>
+        <li><SearchIcon /><span class="sr-only">Search</span></li>
+        <li><SunIcon /><span class="sr-only">Light</span></li>
+        <li><MoonIcon /><span class="sr-only">Dark</span></li>
+        <li><AutoIcon /><span class="sr-only">Auto</span></li>
+      </ul>
+
+      <h2 class="mt-12 mb-4 text-xs font-semibold uppercase tracking-[0.06em] text-fg-muted">Brand marks</h2>
+      <div class="flex flex-wrap items-center gap-8">
+        <Glyph size={56} />
+        <Glyph size={28} variant="lockup" />
+        <a href="/brand/favicon.svg" class="text-fg-muted hover:text-fg">favicon.svg</a>
+        <a href="/brand/icon-192.png" class="text-fg-muted hover:text-fg">icon-192.png</a>
+        <a href="/brand/icon-512.png" class="text-fg-muted hover:text-fg">icon-512.png</a>
+        <a href="/brand/apple-touch-icon.png" class="text-fg-muted hover:text-fg">apple-touch-icon.png</a>
+        <a href="/brand/favicon.ico" class="text-fg-muted hover:text-fg">favicon.ico</a>
+      </div>
+    </section>
+  </main>
+</Base>

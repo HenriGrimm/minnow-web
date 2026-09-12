@@ -1,0 +1,21 @@
+---
+const { size = 24, label } = Astro.props;
+const aria = label ? { 'aria-label': label, role: 'img' } : { 'aria-hidden': 'true' };
+---
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width={size}
+  height={size}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.5"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  {...aria}
+>
+  <path d="M17.7 6H7A3.2 3.2 0 0 0 3.8 9.2v6.6a3.2 3.2 0 0 0 3.2 3.2h2.1l3.1 2.3v-2.3h2.5a3.2 3.2 0 0 0 3.2-3.2v-6.6A3.2 3.2 0 0 0 17.7 6Z" />
+  <path d="M8 12h.01" />
+  <path d="M12 12h.01" />
+  <path d="M16 12h.01" />
+</svg>

@@ -1,0 +1,66 @@
+---
+/**
+ * Glyph — the canonical Minnow fish mark (spec §5.3). Reused inline wherever
+ * the mark appears rather than loading a file. The paths are the app's own:
+ * body + tail stroked from currentColor (so the mark takes the theme) with the
+ * eye punched out as a hole — the hole shows `--mn-bg` behind it, so the mark
+ * reads correctly on any surface.
+ *
+ * `variant="mark"` — just the fish (the default).
+ * `variant="lockup"` — the mark beside "Tiny by design." (the horizontal
+ *   lockup; the subtitle is the lockup-grey sanctioned to brand assets only,
+ *   so it is rendered here with the site's muted fg instead and stays
+ *   theme-independent in behaviour even though it is a component).
+ */
+const { size = 28, variant = 'mark', label } = Astro.props;
+const aria =
+  variant === 'mark'
+    ? label
+      ? { 'aria-label': label, role: 'img' }
+      : { 'aria-hidden': 'true' }
+    : { role: 'img', 'aria-label': 'Minnow — Tiny by design.' };
+---
+{variant === 'mark' ? (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 100 100"
+    fill="none"
+    {...aria}
+  >
+    <path
+      d="M16 50 C 26 36, 44 32, 56 42 L 69 50 L 56 58 C 44 68, 26 64, 16 50 Z"
+      fill="currentColor"
+    />
+    <path d="M69 50 L 84 40 L 81 50 L 84 60 Z" fill="currentColor" />
+    <!-- eye: punched as a hole so --mn-bg shows through -->
+    <circle cx="27" cy="46" r="2.2" fill="var(--mn-bg)" />
+  </svg>
+) : (
+  <span class="inline-flex items-center gap-3" {...aria}>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 100 100"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M16 50 C 26 36, 44 32, 56 42 L 69 50 L 56 58 C 44 68, 26 64, 16 50 Z"
+        fill="currentColor"
+      />
+      <path d="M69 50 L 84 40 L 81 50 L 84 60 Z" fill="currentColor" />
+      <circle cx="27" cy="46" r="2.2" fill="var(--mn-bg)" />
+    </svg>
+    <span class="mn-lockup-subtitle">Tiny by design.</span>
+  </span>
+)}
+<style>
+  .mn-lockup-subtitle {
+    font: 500 var(--fs-small) / 1.2 var(--font-ui);
+    letter-spacing: var(--tracking-title);
+    color: var(--mn-fg-muted);
+  }
+</style>

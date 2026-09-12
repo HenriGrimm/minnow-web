@@ -1,0 +1,21 @@
+---
+const { size = 24, label } = Astro.props;
+const aria = label ? { 'aria-label': label, role: 'img' } : { 'aria-hidden': 'true' };
+---
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width={size}
+  height={size}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.5"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  {...aria}
+>
+  <!-- Canonical fish mark (spec §5.3) scaled into the 24 grid:
+       body nose x4 → tail base x16.7, tail tip x20.4, y centred on 12. -->
+  <path d="M4 12c3.2-6.7 8.8-8.4 12.7-5.5l3.2 5.5-3.2 5.5c-3.9 2.9-9.5 1.2-12.7-5.5Z" />
+  <path d="M16.7 12l3.7-2.8-.9 2.8.9 2.8Z" />
+</svg>

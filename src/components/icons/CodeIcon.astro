@@ -1,0 +1,29 @@
+---
+/**
+ * Rail + chrome icon set. Inline SVGs, 24×24 grid, `stroke="currentColor"` at
+ * 1.5 with rounded caps/joins (spec §5.2). No font, no fills that can drift:
+ * each icon inherits `currentColor` and therefore the theme.
+ *
+ * One file per icon so components import only what they render; `src` is the
+ * sizing knob (defaults to 24 — the app's rail size). `aria-hidden` by
+ * default because these are decorative; pass `label` to make one stand
+ * alone (then the caller is responsible for the accessible name context).
+ */
+const { size = 24, label } = Astro.props;
+const aria = label ? { 'aria-label': label, role: 'img' } : { 'aria-hidden': 'true' };
+---
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width={size}
+  height={size}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.5"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  {...aria}
+>
+  <polyline points="16 18 22 12 16 6" />
+  <polyline points="8 6 2 12 8 18" />
+</svg>
