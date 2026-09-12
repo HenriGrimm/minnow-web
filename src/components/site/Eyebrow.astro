@@ -4,13 +4,12 @@ import '../../styles/site.css';
 interface Props {
   boxed?: boolean;
   class?: string;
-  children?: any;
   [key: string]: any;
 }
 
-const { boxed = false, class: className = '', children, ...rest } = Astro.props as Props;
+const { boxed = false, class: className = '', ...rest } = Astro.props as Props;
 ---
 
 <span class={`mn-eyebrow ${boxed ? 'mn-eyebrow-boxed' : ''} ${className}`} {...rest}>
-  {children}
+  {Astro.slots.default ? await Astro.slots.render('default') : null}
 </span>

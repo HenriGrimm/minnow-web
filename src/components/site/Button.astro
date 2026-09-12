@@ -7,7 +7,6 @@ interface Props {
   size?: 'sm' | 'md';
   type?: 'button' | 'submit';
   class?: string;
-  children?: any;
   [key: string]: any;
 }
 
@@ -17,7 +16,6 @@ const {
   size = 'md',
   type = 'button',
   class: className = '',
-  children,
   ...rest
 } = Astro.props as Props;
 
@@ -35,8 +33,12 @@ const attrs = { class: classes, ...rest };
 
 {
   href ? (
-    <a href={href} {...attrs}>{children}</a>
+    <a href={href} {...attrs}>
+      {Astro.slots.default ? await Astro.slots.render('default') : null}
+    </a>
   ) : (
-    <button type={type} {...attrs}>{children}</button>
+    <button type={type} {...attrs}>
+      {Astro.slots.default ? await Astro.slots.render('default') : null}
+    </button>
   )
 }
