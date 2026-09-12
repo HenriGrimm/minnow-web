@@ -1,0 +1,79 @@
+---
+/**
+ * RunsOn — spec §6.2 §1. The quiet strip: hairline top border, small
+ * heading, a 4×3 grid of mono wordmarks at --mn-fg-muted (hover --mn-fg),
+ * and the footnote. Text wordmarks, not logos — instrument, not logo
+ * soup. All 13 entries come from data/providers.ts (9 cloud + 2 local
+ * providers + 2 runtimes, in registry order).
+ */
+import { CLOUD_PROVIDERS, LOCAL_PROVIDERS, RUNTIMES } from '../../data/providers';
+
+const wordmarks = [
+  ...CLOUD_PROVIDERS.map((p) => p.name),
+  ...LOCAL_PROVIDERS.map((p) => p.name),
+  ...RUNTIMES.map((r) => r.name),
+];
+---
+
+<section class="mn-section mn-section-hairline" aria-labelledby="runs-on-heading">
+  <div class="mn-section-inner mn-runs-on-inner">
+    <h2 id="runs-on-heading" class="mn-runs-on-heading">It runs on whatever you point it at.</h2>
+    <ul class="mn-runs-on-grid">
+      {
+        wordmarks.map((name) => (
+          <li class="mn-runs-on-wordmark" title={name}>{name}</li>
+        ))
+      }
+    </ul>
+    <p class="mn-runs-on-footnote">No accounts, no subscriptions, no usage limits, no telemetry.</p>
+  </div>
+</section>
+
+<style>
+  /* stylelint-disable custom-property-empty-line-before, declaration-empty-line-before */
+
+  .mn-runs-on-inner {
+    max-width: 640px;
+  }
+
+  .mn-runs-on-heading {
+    margin: 0 0 28px;
+    font-size: var(--fs-h3);
+    font-weight: 600;
+    letter-spacing: var(--tracking-title);
+  }
+
+  .mn-runs-on-grid {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px 24px;
+  }
+
+  @media (width <= 640px) {
+    .mn-runs-on-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px 20px;
+    }
+  }
+
+  .mn-runs-on-wordmark {
+    font: 400 var(--fs-mono-sm)/1.3 var(--font-mono);
+    color: var(--mn-fg-muted);
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .mn-runs-on-wordmark:hover {
+      color: var(--mn-fg);
+    }
+  }
+
+  .mn-runs-on-footnote {
+    margin: 28px 0 0;
+    font-size: var(--fs-small);
+    color: var(--mn-fg-subtle);
+  }
+</style>

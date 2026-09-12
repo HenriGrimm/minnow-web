@@ -1,0 +1,112 @@
+---
+/**
+ * Seams — spec §6.2 §2. The thesis, centred at --section-y-lg /
+ * --container-narrow. H2 at --fs-h1, the three-sentence body, and the
+ * seam diagram in its **static** state: five labelled tiles (Editor ·
+ * Tracker · Git · Models · Notes) apart with faint --mn-danger-soft gap
+ * fills. The scroll scrub (tiles sliding together, gaps closing, borders
+ * resolving into one hairline) arrives in W5-C.
+ */
+const tiles = ['Editor', 'Tracker', 'Git', 'Models', 'Notes'] as const;
+---
+
+<section class="mn-section mn-section-lg mn-section-narrow mn-section-center" aria-labelledby="seams-heading">
+  <div class="mn-section-inner">
+    <h2 id="seams-heading" class="mn-seams-h2">
+      Minnow exists because the tools are good but the seams between them were not.
+    </h2>
+    <p class="mn-seams-body">
+      Each tool you already use is good — the editor, the tracker, the
+      git client, the model picker, the notes. What was missing was the
+      space between them: the copy-paste, the re-explaining, the
+      re-logging in. Minnow fills that space.
+    </p>
+    <div class="mn-seams-diagram" aria-label="Five tools apart — Editor, Tracker, Git, Models, Notes — each separated by a visible seam">
+      {
+        tiles.map((label, i) => (
+          <Fragment>
+            <div class="mn-seams-tile" data-seams-tile><span class="mn-seams-tile-label">{label}</span></div>
+            {
+              i < tiles.length - 1 ? (
+                <div class="mn-seams-gap" data-seams-gap aria-hidden="true"></div>
+              ) : (
+                <Fragment></Fragment>
+              )
+            }
+          </Fragment>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  /* stylelint-disable custom-property-empty-line-before, declaration-empty-line-before */
+
+  .mn-seams-h2 {
+    margin: 0 0 24px;
+    font-size: var(--fs-h1);
+    font-weight: 600;
+    letter-spacing: var(--tracking-display);
+    line-height: var(--lh-display);
+  }
+
+  .mn-seams-body {
+    margin: 0 auto;
+    max-width: var(--prose);
+    font-size: var(--fs-lead);
+    line-height: var(--lh-body);
+    color: var(--mn-fg-muted);
+  }
+
+  /* The static five-tile diagram: tiles apart, faint gap fills. */
+  .mn-seams-diagram {
+    display: flex;
+    align-items: stretch;
+    gap: 16px;
+    margin-top: 48px;
+  }
+
+  @media (width <= 640px) {
+    .mn-seams-diagram {
+      gap: 10px;
+    }
+  }
+
+  .mn-seams-tile {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 64px;
+    padding: 0 8px;
+    background: var(--mn-surface-0);
+    border: 1px solid var(--mn-border-strong);
+    border-radius: var(--radius-md);
+  }
+
+  @media (width <= 640px) {
+    .mn-seams-tile {
+      min-height: 52px;
+    }
+  }
+
+  .mn-seams-tile-label {
+    font: 400 var(--fs-mono-sm)/1.3 var(--font-mono);
+    color: var(--mn-fg);
+    text-align: center;
+  }
+
+  .mn-seams-gap {
+    flex: 0 0 16px;
+    background: var(--mn-danger-soft);
+    border-radius: 3px;
+  }
+
+  @media (width <= 640px) {
+    .mn-seams-gap {
+      flex-basis: 10px;
+    }
+  }
+</style>
