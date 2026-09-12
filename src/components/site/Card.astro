@@ -1,0 +1,17 @@
+---
+import '../../styles/site.css';
+
+interface Props {
+  class?: string;
+  title?: string;
+  children?: any;
+  [key: string]: any;
+}
+
+const { class: className = '', title, children, ...rest } = Astro.props as Props;
+---
+
+<div class={`mn-card ${className}`} {...rest}>
+  {title && <h3 class="mn-card-title">{title}</h3>}
+  <div class="mn-card-body">{children}</div>
+</div>

@@ -1,0 +1,25 @@
+---
+import '../../styles/site.css';
+
+interface Props {
+  delay?: number;
+  as?: string;
+  class?: string;
+  children?: any;
+  [key: string]: any;
+}
+
+/**
+ * Reveal wrapper (spec §4.2): adds data-reveal and an optional
+ * --reveal-delay for stagger. The IntersectionObserver that adds
+ * .is-in lands in motion.ts (W5-A); the CSS in site.css hides the
+ * element until then (reduced-motion and JS-off are covered there).
+ */
+const { delay = 0, as = 'div', class: className = '', children, ...rest } = Astro.props as Props;
+
+const Tag = as as any;
+---
+
+<Tag data-reveal style={delay ? `--reveal-delay: ${delay}ms` : undefined} class={className} {...rest}>
+  {children}
+</Tag>

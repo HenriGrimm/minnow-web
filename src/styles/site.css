@@ -1,0 +1,865 @@
+/* stylelint-disable custom-property-empty-line-before, declaration-empty-line-before */
+
+/* ============================================================
+   Site chrome — Nav, Footer, ThemeSwitcher, and the shared
+   components (Button, Card, RowList, CodeBlock, Accordion,
+   Eyebrow, Section, Reveal). Recipes per spec §3.9, §6.1, §6.2.
+   Tokens only — no hex/rgb literals (stylelint-enforced).
+   Class names are flat kebab-case (stylelint selector-class-pattern).
+   ============================================================ */
+
+/* ---------- Skip link (spec §7.9) ---------- */
+.mn-skip-link {
+  position: absolute;
+  top: -48px;
+  left: 12px;
+  z-index: 100;
+  padding: 8px 14px;
+  font: 500 var(--fs-small)/1 var(--font-ui);
+  color: var(--mn-fg-on-accent);
+  background: var(--mn-accent);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: top var(--duration-fast) var(--ease-out);
+}
+
+.mn-skip-link:focus-visible {
+  top: 12px;
+}
+
+/* ---------- Nav (spec §6.1) ---------- */
+.mn-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: 64px;
+  background: var(--mn-bg);
+  border-bottom: 1px solid transparent;
+  transition: border-color 150ms var(--ease-out);
+}
+
+.mn-nav.is-scrolled {
+  border-bottom-color: var(--mn-border);
+}
+
+.mn-nav-inner {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  height: 100%;
+  max-width: var(--container-wide);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+.mn-nav-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  text-decoration: none;
+  color: var(--mn-fg);
+}
+
+.mn-nav-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: var(--mn-accent);
+  border-radius: var(--radius-sm);
+}
+
+.mn-nav-mark svg {
+  width: 18px;
+  height: 18px;
+  fill: var(--mn-fg-on-accent);
+}
+
+.mn-nav-word {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: var(--tracking-title);
+  line-height: 1;
+}
+
+.mn-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mn-nav-links a {
+  font-size: var(--fs-small);
+  font-weight: 500;
+  color: var(--mn-fg-muted);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .mn-nav-links a:hover {
+    color: var(--mn-fg);
+  }
+}
+
+.mn-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-left: auto;
+}
+
+.mn-star-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font: 500 var(--fs-mono-sm)/1 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--mn-fg-muted);
+  text-decoration: none;
+  border: 1px solid var(--mn-border);
+  border-radius: var(--radius-sm);
+  transition: color var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .mn-star-chip:hover {
+    color: var(--mn-fg);
+    border-color: var(--mn-border-strong);
+  }
+}
+
+.mn-star-chip svg {
+  width: 14px;
+  height: 14px;
+  fill: currentcolor;
+}
+
+.mn-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  color: var(--mn-fg-muted);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  transition: color var(--duration-fast) var(--ease-out),
+              background-color var(--duration-fast) var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .mn-icon-btn:hover {
+    color: var(--mn-fg);
+    background: color-mix(in srgb, var(--mn-fg) 4%, var(--mn-bg));
+  }
+}
+
+.mn-icon-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.mn-nav-burger {
+  display: none;
+  width: 40px;
+  height: 40px;
+  margin-left: auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  color: var(--mn-fg);
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.mn-nav-burger span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  border-radius: 1px;
+  background: currentcolor;
+  transition: transform var(--duration-normal) var(--ease-out),
+              opacity var(--duration-normal) var(--ease-out);
+}
+
+.mn-nav-burger[aria-expanded='true'] span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.mn-nav-burger[aria-expanded='true'] span:nth-child(2) {
+  opacity: 0;
+}
+
+.mn-nav-burger[aria-expanded='true'] span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+@media (width <= 767px) {
+  .mn-nav-links,
+  .mn-nav-actions {
+    display: none;
+  }
+
+  .mn-nav-burger {
+    display: inline-flex;
+  }
+}
+
+/* ---------- Button (spec §3.9) — base rule first so the sheet override stays specific ---------- */
+.mn-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 16px;
+  font: 600 var(--fs-small)/1.2 var(--font-ui);
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background var(--duration-fast) var(--ease-out),
+              color var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out),
+              transform var(--duration-fast) var(--ease-out);
+}
+
+.mn-btn:active {
+  transform: scale(0.97);
+}
+
+/* ---------- Mobile sheet (spec §6.1) ---------- */
+.mn-sheet-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: var(--mn-overlay);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-normal) var(--ease-out);
+}
+
+.mn-sheet-scrim.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mn-sheet {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 70;
+  width: min(320px, 88vw);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px 20px 32px;
+  background: var(--mn-bg);
+  border-left: 1px solid var(--mn-border);
+  transform: translateX(100%);
+  visibility: hidden;
+  transition: transform var(--duration-normal) var(--ease-out),
+              visibility 0s linear var(--duration-normal);
+}
+
+.mn-sheet.is-open {
+  transform: translateX(0);
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.mn-sheet-close {
+  align-self: flex-end;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--mn-fg-muted);
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.mn-sheet-close svg {
+  width: 18px;
+  height: 18px;
+}
+
+.mn-sheet-links {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+
+.mn-sheet-links a {
+  display: block;
+  padding: 13px 4px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--mn-fg);
+  text-decoration: none;
+  border-bottom: 1px solid var(--mn-border);
+}
+
+.mn-sheet-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 18px;
+  align-items: stretch;
+}
+
+.mn-sheet-actions .mn-btn {
+  justify-content: center;
+}
+
+.mn-sheet-actions .mn-icon-btn {
+  align-self: center;
+}
+
+/* ---------- ThemeSwitcher (spec §6.1, app .settings-segments) ---------- */
+.mn-theme {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.mn-theme-segments {
+  display: inline-flex;
+  padding: 2px;
+  background: color-mix(in srgb, var(--mn-fg) 5%, var(--mn-bg));
+  border: 1px solid var(--mn-border);
+  border-radius: var(--radius-sm);
+}
+
+.mn-theme-seg {
+  appearance: none;
+  padding: 3px 10px;
+  font: 500 var(--fs-label)/1.4 var(--font-ui);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--mn-fg-muted);
+  background: none;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-out),
+              background-color var(--duration-fast) var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .mn-theme-seg:not(.is-active):hover {
+    color: var(--mn-fg);
+  }
+}
+
+.mn-theme-seg.is-active {
+  color: var(--mn-fg);
+  background: color-mix(in srgb, var(--mn-fg) 9%, transparent);
+}
+
+.mn-theme-caret {
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  margin-left: 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--mn-fg-subtle);
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .mn-theme-caret:hover {
+    color: var(--mn-fg);
+  }
+}
+
+.mn-theme-caret svg {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.mn-theme-caret[aria-expanded='true'] svg {
+  transform: rotate(180deg);
+}
+
+.mn-theme-picker {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 80;
+  width: 260px;
+  padding: 6px;
+  background: var(--mn-bg);
+  border: 1px solid var(--mn-border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-popover-soft);
+  opacity: 0;
+  transform: translateY(-4px);
+  visibility: hidden;
+  transition: opacity var(--duration-fast) var(--ease-out),
+              transform var(--duration-fast) var(--ease-out),
+              visibility 0s linear var(--duration-fast);
+}
+
+.mn-theme-picker.is-open {
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.mn-theme-family {
+  appearance: none;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  font: 500 var(--fs-small)/1.2 var(--font-ui);
+  color: var(--mn-fg);
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .mn-theme-family:hover {
+    background: color-mix(in srgb, var(--mn-fg) 4%, transparent);
+  }
+}
+
+.mn-theme-family.is-active {
+  background: var(--mn-accent-soft);
+}
+
+.mn-swatch-row {
+  margin-left: auto;
+  display: inline-flex;
+  gap: 3px;
+}
+
+.mn-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  border: 1px solid var(--mn-border);
+}
+
+.mn-theme-family-name {
+  font-weight: 600;
+}
+
+/* ---------- Button variants (spec §3.9) ---------- */
+.mn-btn-primary {
+  background: var(--mn-accent);
+  color: var(--mn-fg-on-accent);
+  border-color: var(--mn-accent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .mn-btn-primary:hover {
+    background: color-mix(in srgb, var(--mn-surface-2) 92%, transparent);
+    color: var(--mn-accent);
+    box-shadow: inset 0 0 0 1px var(--mn-accent);
+  }
+}
+
+.mn-btn-ghost {
+  background: var(--mn-bg);
+  color: var(--mn-fg);
+  border-color: var(--mn-border);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .mn-btn-ghost:hover {
+    background: color-mix(in srgb, var(--mn-fg) 4%, var(--mn-bg));
+    border-color: var(--mn-border-strong);
+  }
+}
+
+.mn-btn-sm {
+  padding: 6px 12px;
+  font-size: var(--fs-mono-sm);
+  border-radius: var(--radius-sm);
+}
+
+/* ---------- Card (spec §3.9, .settings-group) ---------- */
+.mn-card {
+  padding: 16px 18px;
+  background: color-mix(in srgb, var(--mn-fg) 1.5%, var(--mn-bg));
+  border: 1px solid var(--mn-border);
+  border-radius: var(--radius-md);
+}
+
+.mn-card-title {
+  margin: 0 0 8px;
+  font-size: var(--fs-small);
+  font-weight: 600;
+}
+
+.mn-card-body {
+  margin: 0;
+  font-size: var(--fs-small);
+  color: var(--mn-fg-muted);
+}
+
+/* ---------- RowList (spec §3.9, .settings-row) ---------- */
+.mn-rowlist {
+  display: flex;
+  flex-direction: column;
+}
+
+.mn-rowlist-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--mn-border);
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.mn-rowlist-row:first-child {
+  padding-top: 0;
+}
+
+.mn-rowlist-row:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .mn-rowlist-row:hover {
+    background: color-mix(in srgb, var(--mn-fg) 2%, transparent);
+  }
+}
+
+.mn-rowlist-label {
+  font-size: var(--fs-mono-sm);
+  color: var(--mn-fg-muted);
+}
+
+.mn-rowlist-value {
+  font-size: var(--fs-h3);
+  font-weight: 600;
+  letter-spacing: var(--tracking-title);
+  text-align: right;
+}
+
+.mn-rowlist-value small {
+  display: block;
+  margin-top: 4px;
+  font-size: var(--fs-small);
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--mn-fg-muted);
+}
+
+/* ---------- CodeBlock (spec §3.9) ---------- */
+.mn-codeblock {
+  margin: 0;
+  padding: 14px 16px;
+  overflow-x: auto;
+  background: var(--tool-call-pre-bg);
+  border: 1px solid var(--mn-border);
+  border-radius: var(--radius-md);
+  font: 400 var(--fs-mono-sm)/1.5 var(--font-mono);
+}
+
+.mn-codeblock code {
+  font: inherit;
+  color: var(--mn-syntax-inline);
+}
+
+.mn-codeblock :is(.cm-keyword, .cm-operator-word, .cm-keyword-control) {
+  color: var(--cm-keyword);
+}
+
+.mn-codeblock .cm-string {
+  color: var(--cm-string);
+}
+
+.mn-codeblock :is(.cm-title, .cm-title.function, .cm-title.class, .cm-title.function-call) {
+  color: var(--cm-title);
+}
+
+.mn-codeblock :is(.cm-attr, .cm-attribute, .cm-property) {
+  color: var(--cm-attr);
+}
+
+.mn-codeblock :is(.cm-number, .cm-constant) {
+  color: var(--mn-fg-muted);
+}
+
+.mn-codeblock :is(.cm-comment, .cm-comment-line) {
+  color: var(--mn-fg-subtle);
+  font-style: italic;
+}
+
+.mn-codeblock .cm-variable {
+  color: var(--mn-syntax-inline);
+}
+
+.mn-codeblock .cm-tag {
+  color: var(--mn-syntax-name);
+}
+
+.mn-codeblock .cm-link {
+  color: var(--mn-syntax-link);
+  text-decoration: underline;
+}
+
+/* ---------- Accordion (spec §3.9 — native details/summary) ---------- */
+.mn-accordion {
+  display: flex;
+  flex-direction: column;
+}
+
+.mn-accordion details {
+  border-bottom: 1px solid var(--mn-border);
+}
+
+.mn-accordion details:first-of-type {
+  border-top: 1px solid var(--mn-border);
+}
+
+.mn-accordion summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px 0;
+  font-size: var(--fs-small);
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.mn-accordion summary::-webkit-details-marker {
+  display: none;
+}
+
+.mn-accordion summary::after {
+  content: '+';
+  flex-shrink: 0;
+  font: 400 16px/1 var(--font-mono);
+  color: var(--mn-fg-subtle);
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.mn-accordion details[open] summary {
+  color: var(--mn-fg);
+}
+
+.mn-accordion details[open] summary::after {
+  transform: rotate(45deg);
+}
+
+.mn-accordion-body {
+  margin: 0;
+  padding: 0 0 18px;
+  font-size: var(--fs-small);
+  line-height: var(--lh-body);
+  color: var(--mn-fg-muted);
+  max-width: var(--prose);
+}
+
+/* ---------- Eyebrow (spec §3.9 chip) ---------- */
+.mn-eyebrow {
+  display: inline-block;
+  margin: 0 0 14px;
+  font: 600 var(--fs-label)/1.3 var(--font-mono);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--mn-fg-muted);
+}
+
+.mn-eyebrow-boxed {
+  padding: 3px 8px;
+  border: 1px solid var(--mn-border-strong);
+  border-radius: var(--radius-sm);
+}
+
+/* ---------- Section (spec §2.1: one idea per screen) ---------- */
+.mn-section {
+  padding: var(--section-y) var(--gutter);
+}
+
+.mn-section-lg {
+  padding: var(--section-y-lg) var(--gutter);
+}
+
+.mn-section-hairline {
+  border-top: 1px solid var(--mn-border);
+}
+
+.mn-section-inner {
+  max-width: var(--container);
+  margin: 0 auto;
+}
+
+.mn-section-wide .mn-section-inner {
+  max-width: var(--container-wide);
+}
+
+.mn-section-narrow .mn-section-inner {
+  max-width: var(--container-narrow);
+}
+
+.mn-section-center .mn-section-inner {
+  text-align: center;
+}
+
+/* ---------- Reveal (spec §4.2) ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  [data-reveal] {
+    opacity: 0;
+    transform: translateY(var(--reveal-y, 20px)) scale(var(--reveal-s, 1));
+    transition:
+      opacity var(--duration-slow) var(--ease-out) var(--reveal-delay, 0s),
+      transform var(--duration-slower) var(--ease-settle) var(--reveal-delay, 0s);
+  }
+
+  [data-reveal].is-in {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- Footer (spec §6.2 §15) ---------- */
+.mn-footer {
+  margin-top: 0;
+  padding: clamp(3rem, 2rem + 4vw, 5rem) var(--gutter) 2rem;
+  border-top: 1px solid var(--mn-border);
+}
+
+.mn-footer-inner {
+  max-width: var(--container);
+  margin: 0 auto;
+}
+
+.mn-footer-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px;
+  padding-bottom: 40px;
+}
+
+@media (width <= 767px) {
+  .mn-footer-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+}
+
+.mn-footer-col h3 {
+  margin: 0 0 12px;
+  font: 600 var(--fs-label)/1.3 var(--font-mono);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--mn-fg-subtle);
+}
+
+.mn-footer-col ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.mn-footer-col a {
+  font-size: var(--fs-small);
+  color: var(--mn-fg-muted);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .mn-footer-col a:hover {
+    color: var(--mn-fg);
+  }
+}
+
+.mn-footer-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 24px;
+  border-top: 1px solid var(--mn-border);
+}
+
+.mn-footer-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mn-footer-lockup .mn-nav-mark {
+  width: 22px;
+  height: 22px;
+}
+
+.mn-footer-lockup .mn-nav-mark svg {
+  width: 14px;
+  height: 14px;
+}
+
+.mn-footer-tagline {
+  font-size: var(--fs-small);
+  color: var(--mn-fg-subtle);
+}
+
+.mn-footer-copy {
+  font: 400 var(--fs-label)/1.4 var(--font-mono);
+  letter-spacing: 0.02em;
+  color: var(--mn-fg-subtle);
+}
+
+/* ---------- Body scroll lock while the sheet is open ---------- */
+html.mn-sheet-open {
+  overflow: hidden;
+}

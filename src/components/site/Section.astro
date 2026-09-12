@@ -1,0 +1,46 @@
+---
+import '../../styles/site.css';
+
+interface Props {
+  id?: string;
+  size?: 'md' | 'lg';
+  container?: 'default' | 'wide' | 'narrow';
+  align?: 'left' | 'center';
+  hairline?: boolean;
+  class?: string;
+  children?: any;
+  [key: string]: any;
+}
+
+/**
+ * One idea per screen (spec §2.1): a full-viewport section with
+ * --section-y / --section-y-lg rhythm, a capped inner container,
+ * and an optional hairline top border.
+ */
+const {
+  id,
+  size = 'md',
+  container = 'default',
+  align = 'left',
+  hairline = false,
+  class: className = '',
+  children,
+  ...rest
+} = Astro.props as Props;
+
+const modifiers = [
+  size === 'lg' ? 'mn-section-lg' : '',
+  container === 'wide' ? 'mn-section-wide' : '',
+  container === 'narrow' ? 'mn-section-narrow' : '',
+  align === 'center' ? 'mn-section-center' : '',
+  hairline ? 'mn-section-hairline' : '',
+]
+  .filter(Boolean)
+  .join(' ');
+---
+
+<section id={id} class={`mn-section ${modifiers} ${className}`} {...rest}>
+  <div class="mn-section-inner">
+    {children}
+  </div>
+</section>

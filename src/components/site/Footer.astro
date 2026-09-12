@@ -1,0 +1,95 @@
+---
+import { SITE } from '../../data/site';
+import '../../styles/site.css';
+
+/**
+ * Four-column footer shell (spec §6.2 §15). The final link set is
+ * filled in W4-F; this shell ships the columns and the bottom row
+ * so the layout is locked in before content lands.
+ */
+
+interface FooterLink {
+  label: string;
+  href: string;
+  external?: boolean;
+}
+
+const columns: { title: string; links: FooterLink[] }[] = [
+  {
+    title: 'Product',
+    links: [
+      { label: 'Download', href: '/download' },
+      { label: 'Changelog', href: '/changelog' },
+      { label: 'Themes', href: '/#themes' },
+      { label: 'Roadmap', href: '/docs/roadmap' },
+    ],
+  },
+  {
+    title: 'Documentation',
+    links: [
+      { label: 'Install', href: '/docs/install' },
+      { label: 'Connect a model', href: '/docs/connect-a-model' },
+      { label: 'Apps', href: '/docs/apps' },
+      { label: 'Architecture', href: '/docs/architecture' },
+      { label: 'Troubleshooting', href: '/docs/troubleshooting' },
+    ],
+  },
+  {
+    title: 'Community',
+    links: [
+      { label: 'GitHub', href: SITE.repoUrl, external: true },
+      { label: 'Discord', href: SITE.discord, external: true },
+      { label: 'Issues', href: SITE.issuesUrl, external: true },
+      { label: 'Sponsor', href: SITE.sponsor, external: true },
+    ],
+  },
+  {
+    title: 'Legal',
+    links: [
+      { label: 'AGPL-3.0-or-later', href: 'https://www.gnu.org/licenses/agpl-3.0.html', external: true },
+      { label: 'Third-party notices', href: '/docs/third-party-notices' },
+      { label: 'Privacy', href: '/privacy' },
+    ],
+  },
+];
+---
+
+<footer class="mn-footer">
+  <div class="mn-footer-inner">
+    <div class="mn-footer-grid">
+      {
+        columns.map((col) => (
+          <div class="mn-footer-col">
+            <h3>{col.title}</h3>
+            <ul>
+              {col.links.map((link) => (
+                <li>
+                  <a
+                    href={link.href}
+                    {...(link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+
+    <div class="mn-footer-bottom">
+      <span class="mn-footer-lockup" aria-hidden="true">
+        <span class="mn-nav-mark">
+          <svg viewBox="0 0 100 100">
+            <path d="M 16 50 C 26 36, 44 32, 56 42 L 69 50 L 56 58 C 44 68, 26 64, 16 50 Z" />
+            <path d="M 69 50 L 84 40 L 81 50 L 84 60 Z" />
+            <circle cx="27" cy="46" r="2.2" style="fill: var(--mn-bg)" />
+          </svg>
+        </span>
+        <span class="mn-footer-tagline">Tiny by design.</span>
+      </span>
+      <span class="mn-footer-copy">© 2026 {SITE.author} · AGPL-3.0-or-later</span>
+    </div>
+  </div>
+</footer>

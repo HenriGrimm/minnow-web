@@ -1,0 +1,29 @@
+---
+import { codeToHtml } from 'shiki';
+import '../../styles/site.css';
+
+interface Props {
+  code: string;
+  lang?: string;
+  class?: string;
+  [key: string]: any;
+}
+
+const { code, lang = 'js', class: className = '', ...rest } = Astro.props as Props;
+
+/**
+ * Shiki css-variables theme — the HTML Shiki emits is class-tagged
+ * (cm-keyword, cm-string, ...) and the .mn-codeblock CSS in site.css
+ * maps those classes onto the app's own --cm-* / --mn-syntax-* tokens,
+ * so code recolours with the theme without a rebuild (spec §3.9).
+ */
+const html = await codeToHtml(code, {
+  lang,
+  theme: 'css-variables',
+  defaultColor: false,
+});
+---
+
+<pre class={`mn-codeblock ${className}`} {...rest}>
+  <code set:html={html.replace(/<pre[^>]*>/, '').replace(/<\/pre>$/, '')}></code>
+</pre>

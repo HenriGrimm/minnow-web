@@ -1,0 +1,42 @@
+---
+import '../../styles/site.css';
+
+interface Props {
+  href?: string;
+  variant?: 'primary' | 'ghost';
+  size?: 'sm' | 'md';
+  type?: 'button' | 'submit';
+  class?: string;
+  children?: any;
+  [key: string]: any;
+}
+
+const {
+  href,
+  variant = 'primary',
+  size = 'md',
+  type = 'button',
+  class: className = '',
+  children,
+  ...rest
+} = Astro.props as Props;
+
+const classes = [
+  'mn-btn',
+  `mn-btn-${variant}`,
+  size === 'sm' ? 'mn-btn-sm' : '',
+  className,
+]
+  .filter(Boolean)
+  .join(' ');
+
+const attrs = { class: classes, ...rest };
+---
+
+{
+  href ? (
+    <a href={href} {...attrs}>{children}</a>
+  ) : (
+    <button type={type} {...attrs}>{children}</button>
+  )
+}

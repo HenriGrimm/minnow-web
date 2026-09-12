@@ -4,6 +4,8 @@ import '../styles/tokens.site.css';
 import '../styles/base.css';
 import '../styles/theme-transitions.css';
 import '../styles/theme.css';
+import Nav from '../components/site/Nav.astro';
+import Footer from '../components/site/Footer.astro';
 ---
 <!doctype html>
 <html lang="en" data-theme="human-dark">
@@ -60,7 +62,12 @@ import '../styles/theme.css';
     </script>
   </head>
   <body>
-    <slot />
+    <a class="mn-skip-link" href="#main">Skip to content</a>
+    <Nav />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
     <script>
       import { initTheme } from '../scripts/theme';
       initTheme();

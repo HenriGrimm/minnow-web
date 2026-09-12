@@ -1,0 +1,25 @@
+---
+import '../../styles/site.css';
+
+interface Item {
+  q: string;
+  a: any;
+}
+
+interface Props {
+  items: Item[];
+  class?: string;
+  [key: string]: any;
+}
+
+const { items, class: className = '', ...rest } = Astro.props as Props;
+---
+
+<div class={`mn-accordion ${className}`} {...rest}>
+  {items.map((item, i) => (
+    <details {...(i === 0 ? { open: true } : {})}>
+      <summary>{item.q}</summary>
+      <div class="mn-accordion-body">{item.a}</div>
+    </details>
+  ))}
+</div>

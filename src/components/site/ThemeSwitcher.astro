@@ -1,0 +1,133 @@
+---
+import { THEME_FAMILIES } from '../../scripts/theme';
+
+/**
+ * Three-state segmented control (Dark · Light · Auto) matching the
+ * app's .settings-segments (spec §6.1). The caret (or a long-press on
+ * a segment) opens the 8-family picker. State is driven by
+ * theme-switch.ts; applyTheme / applyFollowSystem keep the storage keys
+ * identical to the app so the site and the app speak the same dialect.
+ *
+ * Swatch previews are static 4-swatch rows (bg / surface-2 / accent / fg)
+ * per family×mode, pulled from the vendored tokens at build time and
+ * scoped by data attribute so the picker shows each family's true
+ * colours regardless of the page's current theme.
+ */
+
+const familyNames: Record<string, string> = {
+  swamp: 'Swamp',
+  desert: 'Desert',
+  ocean: 'Ocean',
+  coral: 'Coral',
+  mono: 'Mono',
+  matrix: 'Matrix',
+  human: 'Human',
+  mint: 'Mint',
+};
+
+---
+
+<div class="mn-theme" data-theme-switcher aria-haspopup="true" aria-expanded="false">
+  <div class="mn-theme-segments" role="group" aria-label="Theme mode">
+    <button type="button" class="mn-theme-seg" data-mode="dark" aria-pressed="false">Dark</button>
+    <button type="button" class="mn-theme-seg" data-mode="light" aria-pressed="false">Light</button>
+    <button type="button" class="mn-theme-seg" data-mode="auto" aria-pressed="false">Auto</button>
+  </div>
+
+  <button type="button" class="mn-theme-caret" data-theme-caret aria-expanded="false" aria-controls="mn-theme-picker" aria-label="Choose theme family">
+    <svg viewBox="0 0 12 12" aria-hidden="true">
+      <path d="M2 4l4 4 4-4" />
+    </svg>
+  </button>
+
+  <div class="mn-theme-picker" data-theme-picker id="mn-theme-picker" role="menu" aria-label="Theme family">
+    {
+      THEME_FAMILIES.map((family) => (
+        <button type="button" class="mn-theme-family" data-family={family} role="menuitemradio">
+          <span class="mn-theme-family-name">{familyNames[family]}</span>
+          <span class="mn-swatch-row" aria-hidden="true">
+            <span class="mn-swatch" data-swatch={`${family}-dark.bg`}></span>
+            <span class="mn-swatch" data-swatch={`${family}-dark.s2`}></span>
+            <span class="mn-swatch" data-swatch={`${family}-dark.accent`}></span>
+            <span class="mn-swatch" data-swatch={`${family}-dark.fg`}></span>
+            <span class="mn-swatch" data-swatch={`${family}-light.bg`}></span>
+            <span class="mn-swatch" data-swatch={`${family}-light.s2`}></span>
+            <span class="mn-swatch" data-swatch={`${family}-light.accent`}></span>
+            <span class="mn-swatch" data-swatch={`${family}-light.fg`}></span>
+          </span>
+        </button>
+      ))
+    }
+  </div>
+</div>
+
+<style is:global>
+  /* Swatch colours for the family picker — static swatch previews that
+     show the target theme's colours regardless of the page theme. These
+     are display-only; the live page recolours via --mn-* tokens. Values
+     are sourced from src/styles/vendor/tokens.css at build time. */
+  [data-swatch='swamp-dark.bg'] { background: #0f1216; }
+  [data-swatch='swamp-dark.s2'] { background: #1f242b; }
+  [data-swatch='swamp-dark.accent'] { background: #9ec5a7; }
+  [data-swatch='swamp-dark.fg'] { background: #dfe3e8; }
+  [data-swatch='swamp-light.bg'] { background: #f7f7f4; }
+  [data-swatch='swamp-light.s2'] { background: #ededea; }
+  [data-swatch='swamp-light.accent'] { background: #5b8a72; }
+  [data-swatch='swamp-light.fg'] { background: #1c2127; }
+  [data-swatch='desert-dark.bg'] { background: #16140f; }
+  [data-swatch='desert-dark.s2'] { background: #27231b; }
+  [data-swatch='desert-dark.accent'] { background: #d4a574; }
+  [data-swatch='desert-dark.fg'] { background: #e8dcc6; }
+  [data-swatch='desert-light.bg'] { background: #f7f4ec; }
+  [data-swatch='desert-light.s2'] { background: #ebe6d8; }
+  [data-swatch='desert-light.accent'] { background: #a36f2a; }
+  [data-swatch='desert-light.fg'] { background: #2a2418; }
+  [data-swatch='ocean-dark.bg'] { background: #0d1117; }
+  [data-swatch='ocean-dark.s2'] { background: #1d2632; }
+  [data-swatch='ocean-dark.accent'] { background: #7dd3e8; }
+  [data-swatch='ocean-dark.fg'] { background: #dde4ed; }
+  [data-swatch='ocean-light.bg'] { background: #f4f6f9; }
+  [data-swatch='ocean-light.s2'] { background: #e4e9f0; }
+  [data-swatch='ocean-light.accent'] { background: #2b7a96; }
+  [data-swatch='ocean-light.fg'] { background: #1a2230; }
+  [data-swatch='coral-dark.bg'] { background: #141416; }
+  [data-swatch='coral-dark.s2'] { background: #27272b; }
+  [data-swatch='coral-dark.accent'] { background: #f5a3a0; }
+  [data-swatch='coral-dark.fg'] { background: #e6e4e1; }
+  [data-swatch='coral-light.bg'] { background: #fafaf8; }
+  [data-swatch='coral-light.s2'] { background: #ededea; }
+  [data-swatch='coral-light.accent'] { background: #c75651; }
+  [data-swatch='coral-light.fg'] { background: #1c1c1f; }
+  [data-swatch='mono-dark.bg'] { background: #2b2b2b; }
+  [data-swatch='mono-dark.s2'] { background: #3a3a3a; }
+  [data-swatch='mono-dark.accent'] { background: #d4d4d4; }
+  [data-swatch='mono-dark.fg'] { background: #e8e8e8; }
+  [data-swatch='mono-light.bg'] { background: #f7f7f7; }
+  [data-swatch='mono-light.s2'] { background: #d4d4d4; }
+  [data-swatch='mono-light.accent'] { background: #2b2b2b; }
+  [data-swatch='mono-light.fg'] { background: #2b2b2b; }
+  [data-swatch='matrix-dark.bg'] { background: #040604; }
+  [data-swatch='matrix-dark.s2'] { background: #111711; }
+  [data-swatch='matrix-dark.accent'] { background: #28d250; }
+  [data-swatch='matrix-dark.fg'] { background: #dce8dc; }
+  [data-swatch='matrix-light.bg'] { background: #eef2ee; }
+  [data-swatch='matrix-light.s2'] { background: #d6dcd6; }
+  [data-swatch='matrix-light.accent'] { background: #0a6b28; }
+  [data-swatch='matrix-light.fg'] { background: #0a120a; }
+  [data-swatch='human-dark.bg'] { background: #0f0f0f; }
+  [data-swatch='human-dark.s2'] { background: #262626; }
+  [data-swatch='human-dark.accent'] { background: #d27428; }
+  [data-swatch='human-dark.fg'] { background: #ffdbbd; }
+  [data-swatch='human-light.bg'] { background: #fbf1ea; }
+  [data-swatch='human-light.s2'] { background: #eee5de; }
+  [data-swatch='human-light.accent'] { background: #c46820; }
+  [data-swatch='human-light.fg'] { background: #2e2218; }
+  [data-swatch='mint-dark.bg'] { background: #141615; }
+  [data-swatch='mint-dark.s2'] { background: #3a3b3a; }
+  [data-swatch='mint-dark.accent'] { background: #66ffb0; }
+  [data-swatch='mint-dark.fg'] { background: #ffffff; }
+  [data-swatch='mint-light.bg'] { background: #f2faf6; }
+  [data-swatch='mint-light.s2'] { background: #e6eeea; }
+  [data-swatch='mint-light.accent'] { background: #1fa86a; }
+  [data-swatch='mint-light.fg'] { background: #121a16; }
+</style>

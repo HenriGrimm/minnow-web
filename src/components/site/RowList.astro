@@ -1,0 +1,29 @@
+---
+import '../../styles/site.css';
+
+interface Row {
+  label: string;
+  value: string;
+  detail?: string;
+}
+
+interface Props {
+  rows: Row[];
+  class?: string;
+  [key: string]: any;
+}
+
+const { rows, class: className = '', ...rest } = Astro.props as Props;
+---
+
+<div class={`mn-rowlist ${className}`} {...rest}>
+  {rows.map((row) => (
+    <div class="mn-rowlist-row">
+      <span class="mn-rowlist-label">{row.label}</span>
+      <span class="mn-rowlist-value">
+        {row.value}
+        {row.detail && <small>{row.detail}</small>}
+      </span>
+    </div>
+  ))}
+</div>

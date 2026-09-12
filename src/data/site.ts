@@ -4,6 +4,7 @@ export const SITE = {
   url: 'https://minnow.sh',
   repo: 'HenriGrimm/Minnow',
   repoUrl: 'https://github.com/HenriGrimm/Minnow',
+  issuesUrl: 'https://github.com/HenriGrimm/Minnow/issues',
   discord: 'https://discord.gg/U4FPzv9K4X',
   sponsor: 'https://github.com/sponsors/HenriGrimm',
   author: 'Henri Grimm',
