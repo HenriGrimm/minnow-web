@@ -77,8 +77,11 @@ import Footer from '../components/site/Footer.astro';
     <script>
       import { initTheme } from '../scripts/theme';
       import { initCopyButtons } from '../scripts/copy-button';
+      import { initReveal, parkWhenHidden } from '../scripts/motion';
       initTheme();
       initCopyButtons();
+      initReveal();
+      parkWhenHidden();
     </script>
   </body>
 </html>
