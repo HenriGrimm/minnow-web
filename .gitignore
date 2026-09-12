@@ -1,0 +1,17 @@
+# Baseline ignores (created by Minnow git-setup)
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Environment / secrets
+.env
+.env.*
+
+# OS junk
+.DS_Store
+Thumbs.db
+
