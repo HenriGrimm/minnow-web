@@ -1,0 +1,36 @@
+---
+/**
+ * WindowChrome — the 52px topbar: traffic lights, workspace name,
+ * the "Code" breadcrumb, the Ready dot, and the model chip.
+ */
+import Glyph from '../icons/Glyph.astro';
+import CodeIcon from '../icons/CodeIcon.astro';
+import ModelsIcon from '../icons/ModelsIcon.astro';
+---
+<header class="app-chrome">
+  <div class="app-chrome-lights" aria-hidden="true">
+    <span class="app-chrome-light is-close"></span>
+    <span class="app-chrome-light is-min"></span>
+    <span class="app-chrome-light is-max"></span>
+  </div>
+
+  <div class="app-chrome-workspace">
+    <Glyph size={16} />
+    <span>minnow-website</span>
+  </div>
+
+  <span class="app-chrome-breadcrumb">
+    <CodeIcon size={12} />
+    <span>Code</span>
+  </span>
+
+  <span class="app-chrome-status">
+    <span class="app-chrome-status-dot" aria-hidden="true"></span>
+    <span>Ready</span>
+  </span>
+
+  <span class="app-chrome-model">
+    <ModelsIcon size={14} />
+    <span>qwen3.5:30b-a3b</span>
+  </span>
+</header>

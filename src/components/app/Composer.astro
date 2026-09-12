@@ -1,0 +1,43 @@
+---
+/**
+ * Composer — the input row: mode select (PLA), the model chip,
+ * the attach / mic / sparkle inset buttons, and the 44px send
+ * button (the fish glyph rotated 180°).
+ */
+import AttachIcon from '../icons/AttachIcon.astro';
+import MicIcon from '../icons/MicIcon.astro';
+import SparkleIcon from '../icons/SparkleIcon.astro';
+import SendFishIcon from '../icons/SendFishIcon.astro';
+import CaretIcon from '../icons/CaretIcon.astro';
+---
+<div class="app-composer">
+  <span class="app-composer-mode" role="button" aria-label="Mode: Plan">
+    <span>PLA</span>
+    <CaretIcon size={12} />
+  </span>
+
+  <span class="app-composer-model">
+    <span>qwen3.5:30b-a3b</span>
+  </span>
+
+  <input
+    class="app-composer-input"
+    type="text"
+    placeholder="Plan the next wave…"
+    aria-label="Message"
+  />
+
+  <button class="app-composer-inset" type="button" aria-label="Attach files">
+    <AttachIcon size={15} />
+  </button>
+  <button class="app-composer-inset" type="button" aria-label="Dictate">
+    <MicIcon size={15} />
+  </button>
+  <button class="app-composer-inset" type="button" aria-label="Ask Minnow">
+    <SparkleIcon size={15} />
+  </button>
+
+  <button class="app-composer-send" type="button" aria-label="Send">
+    <SendFishIcon size={22} />
+  </button>
+</div>

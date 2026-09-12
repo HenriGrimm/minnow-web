@@ -1,0 +1,37 @@
+---
+/**
+ * AppRail — the 48px icon strip: the six rail apps + Settings,
+ * with the active pill (--mn-accent-soft) on Code.
+ */
+import CodeIcon from '../icons/CodeIcon.astro';
+import SourceControlIcon from '../icons/SourceControlIcon.astro';
+import ModelsIcon from '../icons/ModelsIcon.astro';
+import BrainIcon from '../icons/BrainIcon.astro';
+import IssuesIcon from '../icons/IssuesIcon.astro';
+import SchedulerIcon from '../icons/SchedulerIcon.astro';
+import SettingsIcon from '../icons/SettingsIcon.astro';
+---
+<nav class="app-rail" aria-label="Apps">
+  <a class="app-rail-btn is-active" href="#" aria-current="page" aria-label="Code">
+    <CodeIcon size={22} />
+  </a>
+  <a class="app-rail-btn" href="#" aria-label="Source Control">
+    <SourceControlIcon size={22} />
+  </a>
+  <a class="app-rail-btn" href="#" aria-label="Models">
+    <ModelsIcon size={22} />
+  </a>
+  <a class="app-rail-btn" href="#" aria-label="Brain">
+    <BrainIcon size={22} />
+  </a>
+  <a class="app-rail-btn" href="#" aria-label="Issues">
+    <IssuesIcon size={22} />
+  </a>
+  <a class="app-rail-btn" href="#" aria-label="Scheduler">
+    <SchedulerIcon size={22} />
+  </a>
+  <span class="app-rail-spacer"></span>
+  <a class="app-rail-btn" href="#" aria-label="Settings">
+    <SettingsIcon size={22} />
+  </a>
+</nav>

@@ -1,0 +1,700 @@
+/* stylelint-disable custom-property-empty-line-before, declaration-empty-line-before, selector-class-pattern */
+
+/* ============================================================
+   AppFrame replica — the app's own window rendered on the site.
+   Everything is themed by the vendored --mn-* tokens, so the
+   replica recolours under all 16 data-theme values with no
+   theme-specific CSS of its own.
+   Geometry uses the app's real sizes (the :root geometry tokens
+   from the vendored tokens.css): 52px topbar, 48px rail,
+   300px sidebar, 14px body / 13px mono / 11px labels.
+   On small viewports the whole frame is CSS-scaled — it never
+   reflows (spec: "scale as a whole").
+   ============================================================ */
+
+.app-frame-outer {
+  width: min(var(--app-frame-w, 1240px), 100%);
+  margin: 0 auto;
+  padding: 0;
+}
+
+/* The frame is authored at a fixed 1240px width; the host wrapper is
+   that many pixels and CSS-scales to fit the viewport. */
+.app-frame-host {
+  --app-frame-w: 1240px;
+  width: var(--app-frame-w);
+  max-width: 100%;
+}
+
+.app-frame {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: var(--app-frame-w);
+  height: 800px;
+  overflow: hidden;
+  background: var(--mn-bg);
+  color: var(--mn-fg);
+  border: 1px solid var(--mn-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lift);
+  font-family: var(--font-ui);
+  font-size: 14px; /* the app's body step */
+  line-height: 1.5;
+}
+
+/* ---------- Window chrome (the 52px topbar) ---------- */
+.app-chrome {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+  height: var(--topbar-h, 52px);
+  padding: 0 16px 0 20px;
+  background: var(--mn-surface-0);
+  border-bottom: 1px solid var(--mn-border);
+}
+
+.app-chrome-lights {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.app-chrome-light {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--mn-fg) 18%, transparent);
+}
+
+.app-chrome-light.is-close { background: var(--mn-danger); }
+.app-chrome-light.is-min { background: var(--mn-warning); }
+.app-chrome-light.is-max { background: var(--mn-success); }
+
+.app-chrome-workspace {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: var(--tracking-title);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app-chrome-workspace svg {
+  flex-shrink: 0;
+  color: var(--mn-accent-ink);
+}
+
+.app-chrome-breadcrumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--mn-fg-muted);
+  background: color-mix(in srgb, var(--mn-fg) 4%, transparent);
+  border: 1px solid var(--mn-border);
+  border-radius: var(--radius-sm);
+}
+
+.app-chrome-breadcrumb svg {
+  color: var(--mn-fg-subtle);
+}
+
+.app-chrome-status {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--mn-fg-muted);
+  white-space: nowrap;
+}
+
+.app-chrome-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--mn-success);
+  box-shadow: 0 0 6px var(--mn-success);
+}
+
+.app-chrome-model {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 10px 4px 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--mn-fg-muted);
+  border: 1px solid var(--mn-border);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.app-chrome-model svg {
+  color: var(--mn-accent-ink);
+}
+
+/* ---------- Body: rail | sidebar | main ---------- */
+.app-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ---------- App rail (the 48px icon strip) ---------- */
+.app-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  width: var(--sidebar-rail, 48px);
+  padding: 10px 0 12px;
+  background: var(--mn-surface-0);
+  border-right: 1px solid var(--mn-border);
+}
+
+.app-rail-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  color: var(--mn-fg-muted);
+  border-radius: var(--radius-sm);
+}
+
+.app-rail-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* The 48px rail has room for a 38px-wide icon button, so its active pill
+   can be 38 wide × 32 tall with 3px side gaps and still clear the 1px
+   border line; below that the rail collapses and the pill would touch the
+   line, so it stops being a pill. */
+@media (width >= 900px) {
+  .app-rail-btn.is-active {
+    color: var(--mn-accent-ink);
+    background: var(--mn-accent-soft);
+  }
+}
+
+.app-rail-spacer {
+  flex: 1;
+}
+
+/* ---------- Chat list sidebar (the 300px column) ---------- */
+.app-chatlist {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  width: var(--sidebar-w, 300px);
+  background: var(--mn-surface-1);
+  border-right: 1px solid var(--mn-border);
+}
+
+.app-chatlist-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 14px 10px;
+}
+
+.app-new-chat {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mn-fg);
+  background: none;
+  border: 1px solid var(--mn-border-strong);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.app-new-chat svg {
+  width: 15px;
+  height: 15px;
+  color: var(--mn-fg-muted);
+}
+
+.app-chatlist-head-search {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  color: var(--mn-fg-subtle);
+  border-radius: var(--radius-sm);
+}
+
+.app-chatlist-head-search svg {
+  width: 16px;
+  height: 16px;
+}
+
+.app-chatlist-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 8px;
+  overflow-y: auto;
+}
+
+.app-chat-row {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 10px 10px 11px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+}
+
+.app-chat-row.is-active {
+  background: color-mix(in srgb, var(--mn-fg) 4%, transparent);
+  border-color: var(--mn-border);
+}
+
+.app-chat-row-titleline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.app-chat-row-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Mode badge — PLA / BUI / GEN (plan / build / general). */
+.app-mode-badge {
+  flex-shrink: 0;
+  padding: 1.5px 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.5;
+  border-radius: 4px;
+  border: 1px solid var(--mn-border);
+  color: var(--mn-fg-muted);
+}
+
+.app-mode-badge.is-pla {
+  color: var(--mn-warning);
+  border-color: var(--mn-warning-border);
+  background: var(--mn-warning-soft);
+}
+
+.app-mode-badge.is-gen {
+  color: var(--mn-accent-ink);
+  border-color: var(--mn-accent-border);
+  background: var(--mn-accent-soft);
+}
+
+.app-chat-row-sub {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--mn-fg-subtle);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.app-chat-row-stat {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Main column: transcript | composer | status ---------- */
+.app-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  background: var(--mn-bg);
+}
+
+/* ---------- Transcript ---------- */
+.app-transcript {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 28px 36px 20px;
+}
+
+.app-msg {
+  max-width: 860px;
+}
+
+.app-msg-user {
+  margin-bottom: 24px;
+  padding: 12px 16px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--mn-fg);
+  background: color-mix(in srgb, var(--mn-fg) 4%, transparent);
+  border: 1px solid var(--mn-border);
+  border-radius: var(--radius-md);
+}
+
+.app-msg-assistant {
+  font-size: 14px;
+  line-height: 1.65; /* the transcript's body measure */
+  color: var(--mn-fg);
+}
+
+.app-msg-assistant p {
+  margin: 0 0 12px;
+}
+
+.app-msg-assistant p:last-child {
+  margin-bottom: 0;
+}
+
+.app-msg-assistant code {
+  padding: 1.5px 5px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--mn-syntax-inline);
+  background: var(--tool-call-pre-bg);
+  border: 1px solid var(--mn-border);
+  border-radius: 4px;
+}
+
+.app-msg-assistant strong {
+  font-weight: 600;
+}
+
+/* Tool-call row. */
+.app-toolcall {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0;
+  padding: 9px 12px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--mn-fg-muted);
+  background: var(--tool-call-panel-bg);
+  border: 1px solid var(--mn-border);
+  border-radius: var(--radius-sm);
+}
+
+.app-toolcall-icon {
+  display: inline-flex;
+  color: var(--mn-accent-ink);
+}
+
+.app-toolcall-icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+.app-toolcall-status {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--mn-success-ink);
+}
+
+.app-toolcall-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--mn-success);
+}
+
+.app-toolcall-time {
+  color: var(--mn-fg-subtle);
+}
+
+/* File-changes summary card. */
+.app-filecard {
+  margin-top: 18px;
+  padding: 14px 16px;
+  background: var(--mn-surface-1);
+  border: 1px solid var(--mn-border);
+  border-radius: var(--radius-md);
+}
+
+.app-filecard-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--mn-fg-muted);
+}
+
+.app-filecard-head svg {
+  color: var(--mn-accent-ink);
+}
+
+.app-filecard-stats {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  margin-left: auto;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--mn-fg-subtle);
+}
+
+.app-filecard-stats .is-add { color: var(--mn-success-ink); }
+.app-filecard-stats .is-del { color: var(--mn-danger-ink); }
+
+.app-filecard-files {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+
+.app-filecard-file {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--mn-fg-muted);
+}
+
+.app-filecard-file .is-add { color: var(--mn-success-ink); }
+.app-filecard-file .is-del { color: var(--mn-danger-ink); }
+
+.app-filecard-actions {
+  display: flex;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--mn-border);
+}
+
+.app-filecard-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mn-fg);
+  background: none;
+  border: 1px solid var(--mn-border-strong);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.app-filecard-btn svg {
+  width: 14px;
+  height: 14px;
+  color: var(--mn-fg-muted);
+}
+
+.app-filecard-btn.is-primary {
+  color: var(--mn-fg-on-accent);
+  background: var(--mn-accent);
+  border-color: var(--mn-accent);
+}
+
+.app-filecard-btn.is-primary svg {
+  color: var(--mn-fg-on-accent);
+}
+
+/* ---------- Composer ---------- */
+.app-composer {
+  flex-shrink: 0;
+  margin: 4px 36px 10px;
+  padding: 10px 12px 10px 14px;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  background: var(--mn-surface-1);
+  border: 1px solid var(--mn-border-strong);
+  border-radius: var(--radius-md);
+}
+
+.app-composer:focus-within {
+  border-color: var(--mn-accent-border);
+  box-shadow: 0 0 0 3px var(--mn-accent-soft);
+}
+
+.app-composer-mode {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 8px 0 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--mn-accent-ink);
+  background: var(--mn-accent-soft);
+  border: 1px solid var(--mn-accent-border);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.app-composer-mode svg {
+  width: 12px;
+  height: 12px;
+  color: var(--mn-fg-subtle);
+}
+
+.app-composer-model {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 10px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--mn-fg-subtle);
+  border: 1px solid var(--mn-border);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.app-composer-input {
+  flex: 1;
+  min-width: 0;
+  height: 30px;
+  padding: 0 4px;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 30px;
+  color: var(--mn-fg);
+  background: none;
+  border: none;
+  outline: none;
+}
+
+.app-composer-input::placeholder {
+  color: var(--mn-fg-subtle);
+}
+
+.app-composer-inset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  color: var(--mn-fg-muted);
+  background: color-mix(in srgb, var(--mn-fg) 4%, transparent);
+  border: 1px solid var(--mn-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.app-composer-inset svg {
+  width: 15px;
+  height: 15px;
+}
+
+.app-composer-send {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  color: var(--mn-fg-on-accent);
+  background: var(--mn-accent);
+  border: 1px solid var(--mn-accent);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+/* The fish glyph points along the send direction; the canonical mark
+   faces left, so the send button turns it 180°. */
+.app-composer-send svg {
+  transform: rotate(180deg);
+}
+
+.app-composer-send:active {
+  transform: scale(0.97);
+}
+
+/* ---------- Status bar ---------- */
+.app-statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-shrink: 0;
+  height: 30px;
+  padding: 0 16px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--mn-fg-subtle);
+  background: var(--mn-surface-0);
+  border-top: 1px solid var(--mn-border);
+}
+
+.app-statusbar-left,
+.app-statusbar-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.app-statusbar-sep {
+  opacity: 0.6;
+}
+
+/* ============================================================
+   Small-viewport scaling — the frame is scaled as a whole
+   (width 100vw at the 375px notch), never reflowed. The rail
+   stays 48px-equivalent: 48px × scale.
+   ============================================================ */
+@media (width < 1280px) {
+  .app-frame-outer {
+    padding: 0;
+    overflow: hidden;
+    height: calc((802px * 100vw) / var(--app-frame-w, 1240px));
+  }
+
+  .app-frame-host {
+    transform: scale(calc(100vw / var(--app-frame-w, 1240px)));
+    transform-origin: top left;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-frame-host {
+    transform: none;
+  }
+}

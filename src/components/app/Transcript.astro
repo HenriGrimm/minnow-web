@@ -1,0 +1,88 @@
+---
+/**
+ * Transcript — the conversation column: the user turn, the
+ * assistant markdown (14px/1.65), one tool-call row, and the
+ * file-changes summary card with Commit / Create PR / Review.
+ */
+import ModelsIcon from '../icons/ModelsIcon.astro';
+import SourceControlIcon from '../icons/SourceControlIcon.astro';
+import IssuesIcon from '../icons/IssuesIcon.astro';
+---
+<div class="app-transcript">
+  <div class="app-msg app-msg-user">
+    Build the AppFrame replica — the outer window, chrome, rail, chat
+    list, transcript, composer, and status bar. It must recolor under
+    every theme from the vendored tokens.
+  </div>
+
+  <div class="app-msg app-msg-assistant">
+    <p>
+      Done — the frame is authored at 1240×800 and scaled as a whole
+      below 1280px, so it never reflows. Every surface reads the
+      <code>--mn-*</code> tokens directly: <code>--mn-bg</code>,
+      <code>--mn-surface-0</code>/<code>1</code>/<code>2</code>,
+      <code>--mn-border</code>, <code>--mn-accent-soft</code>,
+      <code>--shadow-lift</code>.
+    </p>
+
+    <div class="app-toolcall">
+      <span class="app-toolcall-icon" aria-hidden="true">
+        <ModelsIcon size={15} />
+      </span>
+      <span>tool &nbsp; npm run build</span>
+      <span class="app-toolcall-status">
+        <span class="app-toolcall-status-dot" aria-hidden="true"></span>
+        <span>ok</span>
+        <span class="app-toolcall-time">5.2s</span>
+      </span>
+    </div>
+
+    <p>
+      The rail keeps its 48px geometry at every scale, and the send
+      button's fish glyph is rotated 180° so the mark points along
+      the send direction. <strong>Flip</strong> <code>data-theme</code>
+      on <code>&lt;html&gt;</code> to watch it recolor.
+    </p>
+
+    <div class="app-filecard">
+      <div class="app-filecard-head">
+        <SourceControlIcon size={14} />
+        <span>File changes</span>
+        <span class="app-filecard-stats">
+          8 files <span class="is-add">+73</span> <span class="is-del">−79</span>
+        </span>
+      </div>
+      <div class="app-filecard-files">
+        <span class="app-filecard-file">
+          src/styles/app-frame.css
+          <span class="is-add">+312</span>
+        </span>
+        <span class="app-filecard-file">
+          src/components/app/AppFrame.astro
+          <span class="is-add">+34</span>
+        </span>
+        <span class="app-filecard-file">
+          src/components/app/Composer.astro
+          <span class="is-add">+41</span>
+        </span>
+        <span class="app-filecard-file">
+          src/styles/site.css
+          <span class="is-del">−79</span>
+        </span>
+      </div>
+      <div class="app-filecard-actions">
+        <button class="app-filecard-btn is-primary" type="button">
+          Commit
+        </button>
+        <button class="app-filecard-btn" type="button">
+          <SourceControlIcon size={14} />
+          Create PR
+        </button>
+        <button class="app-filecard-btn" type="button">
+          <IssuesIcon size={14} />
+          Review
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

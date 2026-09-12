@@ -1,0 +1,34 @@
+---
+/**
+ * AppFrame — the app's own window rendered as a replica on the site
+ * (W3-B). The outer window: chrome, rail, sidebar, main column, status
+ * bar. Everything is themed by the vendored --mn-* tokens, so the
+ * replica recolours under every data-theme with no theme-specific CSS.
+ *
+ * The frame is authored at 1240×800 and CSS-scaled as a whole on small
+ * viewports — it never reflows (the rail stays 48px-equivalent).
+ */
+import '../../styles/app-frame.css';
+import WindowChrome from './WindowChrome.astro';
+import AppRail from './AppRail.astro';
+import ChatList from './ChatList.astro';
+import Transcript from './Transcript.astro';
+import Composer from './Composer.astro';
+import StatusBar from './StatusBar.astro';
+---
+<div class="app-frame-outer">
+  <div class="app-frame-host">
+    <section class="app-frame" aria-label="Minnow app — Code workspace" style="--app-frame-w: 1240px">
+      <WindowChrome />
+      <div class="app-body">
+        <AppRail />
+        <ChatList />
+        <div class="app-main">
+          <Transcript />
+          <Composer />
+          <StatusBar />
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

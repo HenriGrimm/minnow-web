@@ -1,0 +1,84 @@
+---
+/**
+ * ChatList — the 300px sidebar: "+ New chat" (outlined), then the
+ * chat rows. Each row carries its mode badge (PLA / BUI / GEN),
+ * the mono model id at --mn-fg-subtle, and the stat line for the
+ * active row ("8 files +73 −79").
+ */
+import NewChatIcon from '../icons/NewChatIcon.astro';
+import SearchIcon from '../icons/SearchIcon.astro';
+---
+<aside class="app-chatlist" aria-label="Chats">
+  <div class="app-chatlist-head">
+    <button class="app-new-chat" type="button">
+      <NewChatIcon size={15} />
+      <span>New chat</span>
+    </button>
+    <span class="app-chatlist-head-search" aria-hidden="true">
+      <SearchIcon size={16} />
+    </span>
+  </div>
+
+  <div class="app-chatlist-rows">
+    <div class="app-chat-row is-active">
+      <div class="app-chat-row-titleline">
+        <span class="app-chat-row-title">Wave 3: AppFrame replica</span>
+        <span class="app-mode-badge is-pla">PLA</span>
+      </div>
+      <div class="app-chat-row-sub">
+        <span>qwen3.5:30b-a3b</span>
+        <span class="app-chat-row-stat">8 files +73 −79</span>
+      </div>
+    </div>
+
+    <div class="app-chat-row">
+      <div class="app-chat-row-titleline">
+        <span class="app-chat-row-title">Tokens: 16-theme vendor sync</span>
+        <span class="app-mode-badge">BUI</span>
+      </div>
+      <div class="app-chat-row-sub">
+        <span>llama3.2:11b</span>
+      </div>
+    </div>
+
+    <div class="app-chat-row">
+      <div class="app-chat-row-titleline">
+        <span class="app-chat-row-title">Stylelint: token-only rule</span>
+        <span class="app-mode-badge">BUI</span>
+      </div>
+      <div class="app-chat-row-sub">
+        <span>qwen3.5:30b-a3b</span>
+      </div>
+    </div>
+
+    <div class="app-chat-row">
+      <div class="app-chat-row-titleline">
+        <span class="app-chat-row-title">Why does the fish rotate on send?</span>
+        <span class="app-mode-badge is-gen">GEN</span>
+      </div>
+      <div class="app-chat-row-sub">
+        <span>llama3.2:3b</span>
+      </div>
+    </div>
+
+    <div class="app-chat-row">
+      <div class="app-chat-row-titleline">
+        <span class="app-chat-row-title">Bench: 30b vs 11b on this repo</span>
+        <span class="app-mode-badge is-pla">PLA</span>
+      </div>
+      <div class="app-chat-row-sub">
+        <span>qwen3.5:30b-a3b</span>
+      </div>
+    </div>
+
+    <div class="app-chat-row">
+      <div class="app-chat-row-titleline">
+        <span class="app-chat-row-title">Scheduler: nightly /loop runs</span>
+        <span class="app-mode-badge">BUI</span>
+      </div>
+      <div class="app-chat-row-sub">
+        <span>llama3.2:11b</span>
+      </div>
+    </div>
+  </div>
+</aside>
