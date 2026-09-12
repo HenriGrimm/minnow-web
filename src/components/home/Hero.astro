@@ -1,0 +1,63 @@
+---
+/**
+ * Hero — spec §6.2 §0. The first screen: eyebrow, display H1, lead,
+ * the two CTAs (primary download + ghost docs), the small mono platform
+ * links, and the git clone row with its copy button. The AppFrame replica
+ * sits full-bleed to --container-wide and bleeds slightly off the bottom
+ * of the fold — the static first paint; W5-B adds the reveal sequence.
+ *
+ * The primary CTA label is swapped client-side by detectPlatform() on
+ * load — the default markup says "Download for macOS" (the majority
+ * target), so the no-JS / first-paint path reads correctly.
+ */
+import '../../styles/hero.css';
+import Eyebrow from '../site/Eyebrow.astro';
+import Button from '../site/Button.astro';
+import AppFrame from '../app/AppFrame.astro';
+---
+
+<section class="mn-hero mn-section">
+  <div class="mn-hero-inner mn-section-inner">
+    <Eyebrow boxed class="mn-hero-eyebrow">AGPL-3.0-OR-LATER · v0.1.3 · WINDOWS · MACOS · LINUX</Eyebrow>
+    <h1 class="mn-hero-h1">A full agentic development workspace.</h1>
+    <p class="mn-hero-lead">
+      Open source, and completely yours. Plan, build, and review code
+      alongside an agent that works in your repo — nothing sent off
+      machine, nothing you don't own.
+    </p>
+    <div class="mn-hero-ctas">
+      <Button href="/docs/download" variant="primary" data-hero-download>Download for macOS</Button>
+      <Button href="/docs" variant="ghost">Read the docs →</Button>
+    </div>
+    <nav class="mn-hero-platforms" aria-label="Downloads by platform">
+      <a href="/docs/download#windows">Windows</a>
+      <a href="/docs/download#macos">macOS</a>
+      <a href="/docs/download#linux">Linux</a>
+      <a href="/docs#source">Source</a>
+    </nav>
+    <div class="mn-hero-clone">
+      <code>git clone https://github.com/HenriGrimm/Minnow.git</code>
+      <button
+        type="button"
+        class="mn-hero-copy"
+        data-copy="git clone https://github.com/HenriGrimm/Minnow.git"
+        aria-label="Copy clone command"
+      >
+        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="5" y="5" width="9" height="9" rx="1.5" />
+          <path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5" />
+        </svg>
+        Copy
+      </button>
+    </div>
+  </div>
+  <div class="mn-hero-frame">
+    <AppFrame />
+  </div>
+</section>
+
+<script>
+  import { detectPlatform, platformLabel } from '../../scripts/platform';
+  const download = document.querySelector<HTMLElement>('[data-hero-download]');
+  if (download) download.textContent = platformLabel(detectPlatform());
+</script>
