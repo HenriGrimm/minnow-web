@@ -1,0 +1,130 @@
+---
+/**
+ * Replaces — spec §6.2 §4. "What it replaces." The seven sanctioned
+ * rows from data/replaces.ts as a stack on hairline dividers: left
+ * `insteadOf` in mono at `--mn-fg-muted`, right the surface name at
+ * `--fs-h3`/600 with one line (`honestBecause`). Hover veil only — no
+ * scroll motion. The closing line says what the integration buys.
+ *
+ * Nothing outside data/replaces.ts may be claimed here (spec §1.4).
+ */
+import { REPLACES } from '../../data/replaces';
+
+const closing =
+  'They share one chat engine, one tool set, one session store, and one workspace root. What the agent learns in one is available in all of them.';
+---
+
+<section class="mn-section mn-section-hairline" aria-labelledby="replaces-heading">
+  <div class="mn-section-inner mn-replaces-inner">
+    <h2 id="replaces-heading" class="mn-replaces-h2">What it replaces.</h2>
+    <ul class="mn-replaces-list">
+      {
+        REPLACES.map((row) => (
+          <li class="mn-replaces-row" data-replaces-row>
+            <span class="mn-replaces-instead">{row.insteadOf}</span>
+            <div class="mn-replaces-right">
+              <span class="mn-replaces-name">{row.youGet}</span>
+              <p class="mn-replaces-line">{row.honestBecause}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+    <p class="mn-replaces-closing">{closing}</p>
+  </div>
+</section>
+
+<style>
+  /* stylelint-disable custom-property-empty-line-before, declaration-empty-line-before */
+
+  .mn-replaces-inner {
+    max-width: 900px;
+  }
+
+  .mn-replaces-h2 {
+    margin: 0 0 40px;
+    font-size: var(--fs-h2);
+    font-weight: 600;
+    letter-spacing: var(--tracking-title);
+    line-height: var(--lh-title);
+  }
+
+  .mn-replaces-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Hover veil only — the hairline divider stays, the row gains a quiet
+     surface veil and the muted left column comes up in colour. */
+  .mn-replaces-row {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: 24px;
+    padding: 22px 20px;
+    border-top: 1px solid var(--mn-border);
+  }
+
+  .mn-replaces-row:last-child {
+    border-bottom: 1px solid var(--mn-border);
+  }
+
+  .mn-replaces-row::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: color-mix(in srgb, var(--mn-fg) 3%, transparent);
+    opacity: 0;
+    transition: opacity var(--duration-fast) var(--ease-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .mn-replaces-row:hover::after {
+      opacity: 1;
+    }
+
+    .mn-replaces-row:hover .mn-replaces-instead {
+      color: var(--mn-fg-muted);
+    }
+  }
+
+  @media (width <= 700px) {
+    .mn-replaces-row {
+      grid-template-columns: 1fr;
+      gap: 8px;
+      padding: 18px 16px;
+    }
+  }
+
+  .mn-replaces-instead {
+    font: 400 var(--fs-mono-sm)/1.6 var(--font-mono);
+    color: var(--mn-fg-subtle);
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+
+  .mn-replaces-name {
+    display: block;
+    margin-bottom: 4px;
+    font-size: var(--fs-h3);
+    font-weight: 600;
+    letter-spacing: var(--tracking-title);
+    color: var(--mn-fg);
+  }
+
+  .mn-replaces-line {
+    margin: 0;
+    font-size: var(--fs-small);
+    line-height: var(--lh-body);
+    color: var(--mn-fg-muted);
+  }
+
+  .mn-replaces-closing {
+    margin: 36px 0 0;
+    max-width: var(--prose);
+    font-size: var(--fs-lead);
+    line-height: var(--lh-body);
+    color: var(--mn-fg-muted);
+  }
+</style>

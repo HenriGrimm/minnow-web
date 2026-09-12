@@ -1,0 +1,301 @@
+---
+/**
+ * BuildLoop — spec §6.2 §3. The build loop: idea → Plan mode, then the
+ * four surfaces the loop runs through (Orchestrator board, Source
+ * Control, Issues, Brain). Left list + right screenshot, **static
+ * stacked layout** — the pin (sticky viewport, 500vh spacer, cross-fade)
+ * arrives in W5-D. Step markers are filled dots, not border-left
+ * stripes.
+ *
+ * The four screenshots are loaded through `astro:assets` from
+ * `src/assets/screenshots/` (synced by scripts/sync-minnow.mjs) and
+ * render inside the AppFrame replica's window chrome, so the loop reads
+ * as the app's own windows.
+ */
+import { Image } from 'astro:assets';
+import Eyebrow from '../site/Eyebrow.astro';
+import Glyph from '../icons/Glyph.astro';
+import appOrchestrator from '../../assets/screenshots/app-orchestrator.png';
+import appSourceControl from '../../assets/screenshots/app-source-control.png';
+import appIssues from '../../assets/screenshots/app-issues.png';
+import appBrain from '../../assets/screenshots/app-brain.png';
+
+const steps = [
+  {
+    title: 'Idea',
+    body: 'You type the idea, and the agent plans it. Plan mode writes the steps before a single file changes.',
+    shot: null,
+  },
+  {
+    title: 'Orchestrator board',
+    body: 'The plan becomes waves. Builder and Tester agents run in isolated worktrees, and the board shows every step of the way.',
+    shot: { src: appOrchestrator, alt: 'The Orchestrator board — plan waves with Builder and Tester agents', name: 'Orchestrator' },
+  },
+  {
+    title: 'Source Control',
+    body: 'Changes, history, branches, worktrees, and PRs — reviewed the way you would, with the agent filing them alongside you.',
+    shot: { src: appSourceControl, alt: 'The Source Control Center — changes, branches, and pull requests', name: 'Source Control' },
+  },
+  {
+    title: 'Issues',
+    body: 'What the agent finds becomes an issue: triage, assign, track. The issue tools file to itself, so nothing is lost between sessions.',
+    shot: { src: appIssues, alt: 'The Issues surface — board, triage, and saved views', name: 'Issues' },
+  },
+  {
+    title: 'Brain',
+    body: 'The context the loop learns — the code index, memories, project notes — lands in the Brain, and every future step reads from it.',
+    shot: { src: appBrain, alt: 'The Brain — Markdown wiki, semantic recall, and memories', name: 'Brain' },
+  },
+] as const;
+---
+
+<section class="mn-section mn-section-hairline" aria-labelledby="build-loop-heading">
+  <div class="mn-section-inner mn-build-loop-inner">
+    <div class="mn-build-loop-head">
+      <Eyebrow boxed>THE BUILD LOOP</Eyebrow>
+      <h2 id="build-loop-heading" class="mn-build-loop-h2">
+        From idea to merged, in one loop.
+      </h2>
+      <p class="mn-build-loop-lead">
+        You describe the work. Minnow plans it, runs it, reviews it, and
+        keeps the context — then the next idea starts from there.
+      </p>
+    </div>
+
+    <div class="mn-build-loop-grid">
+      <ol class="mn-build-loop-steps">
+        {
+          steps.map((step, i) => (
+            <li class="mn-build-loop-step" data-build-loop-step>
+              <span class="mn-build-loop-marker" aria-hidden="true">
+                <span class="mn-build-loop-dot"></span>
+              </span>
+              <div class="mn-build-loop-step-body">
+                <span class="mn-build-loop-step-num">{i + 1}</span>
+                <span class="mn-build-loop-step-title">{step.title}</span>
+                <p class="mn-build-loop-step-body-text">{step.body}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+
+      <div class="mn-build-loop-shots">
+        {steps
+          .filter((s) => s.shot !== null)
+          .map((s) => (
+            <figure class="mn-build-loop-shot">
+              <div class="mn-build-loop-shot-frame">
+                <header class="mn-build-loop-shot-chrome">
+                  <div class="mn-build-loop-shot-lights" aria-hidden="true">
+                    <span class="mn-build-loop-shot-light is-close"></span>
+                    <span class="mn-build-loop-shot-light is-min"></span>
+                    <span class="mn-build-loop-shot-light is-max"></span>
+                  </div>
+                  <span class="mn-build-loop-shot-workspace">
+                    <Glyph size={14} />
+                    <span>{s.shot?.name}</span>
+                  </span>
+                </header>
+                <div class="mn-build-loop-shot-img">
+                  <Image
+                    src={s.shot!.src}
+                    alt={s.shot!.alt}
+                    width={1600}
+                    height={875}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+              </div>
+            </figure>
+          ))}
+      </div>
+    </div>
+
+    <p class="mn-build-loop-closing">You can also just open a repo and start typing.</p>
+  </div>
+</section>
+
+<style>
+  /* stylelint-disable custom-property-empty-line-before, declaration-empty-line-before */
+
+  .mn-build-loop-inner {
+    max-width: var(--container-wide);
+  }
+
+  .mn-build-loop-head {
+    margin-bottom: 56px;
+  }
+
+  .mn-build-loop-h2 {
+    margin: 0 0 16px;
+    font-size: var(--fs-h2);
+    font-weight: 600;
+    letter-spacing: var(--tracking-title);
+    line-height: var(--lh-title);
+  }
+
+  .mn-build-loop-lead {
+    margin: 0;
+    max-width: var(--prose);
+    font-size: var(--fs-lead);
+    line-height: var(--lh-body);
+    color: var(--mn-fg-muted);
+  }
+
+  /* Static stacked layout — left list, right screenshot stack. The pin
+     (sticky + 500vh spacer + cross-fade) arrives in W5-D. */
+  .mn-build-loop-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: 48px 64px;
+  }
+
+  @media (width <= 900px) {
+    .mn-build-loop-grid {
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+  }
+
+  /* ---------- Left: the five steps ---------- */
+
+  .mn-build-loop-steps {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .mn-build-loop-step {
+    display: flex;
+    gap: 16px;
+  }
+
+  /* Filled dot marker — not a border-left stripe. */
+  .mn-build-loop-marker {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 5px;
+  }
+
+  .mn-build-loop-dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--mn-accent);
+  }
+
+  .mn-build-loop-step-body {
+    min-width: 0;
+  }
+
+  .mn-build-loop-step-num {
+    display: block;
+    margin-bottom: 4px;
+    font: 500 var(--fs-mono-sm)/1.3 var(--font-mono);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--mn-fg-subtle);
+  }
+
+  .mn-build-loop-step-title {
+    display: block;
+    margin-bottom: 6px;
+    font-size: var(--fs-h3);
+    font-weight: 600;
+    letter-spacing: var(--tracking-title);
+    color: var(--mn-fg);
+  }
+
+  .mn-build-loop-step-body-text {
+    margin: 0;
+    font-size: var(--fs-small);
+    line-height: var(--lh-body);
+    color: var(--mn-fg-muted);
+  }
+
+  /* ---------- Right: the four screenshots in window chrome ---------- */
+
+  .mn-build-loop-shots {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .mn-build-loop-shot {
+    margin: 0;
+  }
+
+  .mn-build-loop-shot-frame {
+    overflow: hidden;
+    background: var(--mn-bg);
+    border: 1px solid var(--mn-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+  }
+
+  .mn-build-loop-shot-chrome {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 40px;
+    padding: 0 14px;
+    background: var(--mn-surface-0);
+    border-bottom: 1px solid var(--mn-border);
+  }
+
+  .mn-build-loop-shot-lights {
+    display: inline-flex;
+    gap: 6px;
+  }
+
+  .mn-build-loop-shot-light {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--mn-fg) 18%, transparent);
+  }
+
+  .mn-build-loop-shot-light.is-close { background: var(--mn-danger); }
+  .mn-build-loop-shot-light.is-min { background: var(--mn-warning); }
+  .mn-build-loop-shot-light.is-max { background: var(--mn-success); }
+
+  .mn-build-loop-shot-workspace {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: var(--tracking-title);
+    color: var(--mn-fg-muted);
+  }
+
+  .mn-build-loop-shot-workspace svg {
+    color: var(--mn-accent-ink);
+  }
+
+  .mn-build-loop-shot-img {
+    aspect-ratio: 16 / 9;
+    background: var(--mn-surface-0);
+  }
+
+  .mn-build-loop-shot-img img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .mn-build-loop-closing {
+    margin: 56px 0 0;
+    font-size: var(--fs-lead);
+    line-height: var(--lh-body);
+    color: var(--mn-fg-muted);
+  }
+</style>
