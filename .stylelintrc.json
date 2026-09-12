@@ -1,3 +1,9 @@
 {
-  "extends": "stylelint-config-standard"
+  "extends": "stylelint-config-standard",
+  "rules": {
+    "color-no-hex": true,
+    "declaration-property-value-disallowed-list": {
+      "/^(background|background-color|color|border|border-\\w*|fill|stroke|box-shadow|outline|caret-color|scrollbar-color)$/": "/^rgba?\\(|^hsl\\(/"
+    }
+  }
 }

@@ -1,0 +1,76 @@
+/* Base — adapted from Minnow's src/styles/global.css. Spec §3.7.
+   App-shell rules (overflow:hidden / display:flex on body) are dropped for the web. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  /* stylelint-disable-next-line property-no-vendor-prefix */
+  -webkit-text-size-adjust: 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--mn-fg);
+  background: var(--mn-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--mn-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Scrollbar — the app's slim bordered thumb. */
+:root {
+  --scrollbar-size: 8px;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--mn-border-strong) transparent;
+}
+
+::-webkit-scrollbar {
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--mn-border-strong);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+  border-radius: calc(var(--scrollbar-size) / 2);
+}
+
+::selection {
+  background: var(--mn-selection-bg);
+}
+
+/* Reduced motion — global kill. Spec §4.4. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

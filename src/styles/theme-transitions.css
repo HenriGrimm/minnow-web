@@ -1,0 +1,25 @@
+/* Theme transitions — ported from the Minnow app (spec §7.4).
+   160ms colour settle so a theme switch reads as one move, not a hard cut.
+   Opt out per-run with .theme-no-transition on the root. */
+
+:root.theme-ready,
+:root.theme-ready * {
+  transition:
+    background-color 160ms var(--ease-out),
+    border-color 160ms var(--ease-out),
+    fill 160ms var(--ease-out),
+    stroke 160ms var(--ease-out);
+}
+
+:root.theme-no-transition,
+:root.theme-no-transition * {
+  transition: none !important;
+}
+
+/* Caret paint lag fix — form fields must not inherit the colour transition,
+   or the caret trails the caret-blink on focus. */
+:root.theme-ready input,
+:root.theme-ready textarea,
+:root.theme-ready select {
+  transition: none;
+}

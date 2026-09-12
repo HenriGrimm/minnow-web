@@ -1,0 +1,35 @@
+/* stylelint-disable custom-property-empty-line-before */
+
+/* Site-only tokens — theme-independent. Spec §3.5. */
+:root {
+  /* Display scale — extends the app's 11/13/14/15px chrome scale upward.
+     Chrome stays at app sizes inside .app-frame; prose on the web is 16px. */
+  --fs-display: clamp(2.75rem, 1.55rem + 5.3vw, 5.5rem);    /*  44 → 88 */
+  --fs-h1:      clamp(2.25rem, 1.40rem + 3.7vw, 4rem);      /*  36 → 64 */
+  --fs-h2:      clamp(1.75rem, 1.22rem + 2.3vw, 2.75rem);   /*  28 → 44 */
+  --fs-h3:      clamp(1.25rem, 1.06rem + 0.8vw, 1.625rem);  /*  20 → 26 */
+  --fs-lead:    clamp(1.0625rem, 1rem + 0.4vw, 1.25rem);    /*  17 → 20 */
+  --fs-body:    1rem;
+  --fs-small:   0.875rem;
+  --fs-label:   0.6875rem;   /* 11px — the app's label step */
+  --fs-mono-sm: 0.8125rem;   /* 13px — the app's mono step */
+
+  --tracking-display: -0.035em;
+  --tracking-title:   -0.02em;   /* identical to the app */
+  --tracking-label:    0.06em;   /* identical to the app */
+  --lh-display: 1.04;  --lh-title: 1.12;  --lh-body: 1.6;
+
+  --section-y:    clamp(5rem, 3rem + 8vw, 10rem);
+  --section-y-lg: clamp(7rem, 4rem + 12vw, 14rem);
+  --gutter:       clamp(1.25rem, 0.75rem + 2vw, 2.5rem);
+  --container:        1200px;
+  --container-wide:   1440px;
+  --container-narrow:  760px;
+  --prose: 72ch;                 /* the app's 72ch rule, kept */
+
+  --radius-xl: 20px;  --radius-2xl: 28px;   /* marketing surfaces only */
+
+  --duration-slower: 0.6s;
+  --ease-settle: cubic-bezier(0.22, 1, 0.36, 1);  /* already the 2nd-most-used easing in the app */
+  --ease-os:     cubic-bezier(0.2, 0.7, 0.2, 1);
+}

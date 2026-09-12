@@ -1,0 +1,183 @@
+/*
+ * sync-minnow.mjs — pull vendorable content from the Minnow repo.
+ *
+ *   node scripts/sync-minnow.mjs --repo HenriGrimm/Minnow --ref main
+ *
+ * Extracts:
+ *   src/styles/tokens.css      → src/styles/vendor/tokens.css  (banner + documented 4-token patch)
+ *   documentation/images/*.png → src/assets/screenshots/       (skip app-research.png)
+ *   public/logos/**            → public/brand/
+ *
+ * The token file is vendored with the one documented patch (spec §3.1): the
+ * four --mn-syntax-* tokens are appended to the human-dark and mint-dark
+ * blocks — the only two of the 16 that omit them upstream.
+ *
+ * Guard: all 16 [data-theme=...] blocks must be present or the sync fails loudly.
+ * (Docs transforms + nav validation land in W7-A.)
+ */
+
+import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { execSync } from 'node:child_process';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { tmpdir } from 'node:os';
+
+const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+
+function parseArgs(argv) {
+  const args = { repo: 'HenriGrimm/Minnow', ref: 'main' };
+  for (let i = 0; i < argv.length; i++) {
+    const key = argv[i];
+    if (key === '--repo' && argv[i + 1]) args.repo = argv[++i];
+    else if (key === '--ref' && argv[i + 1]) args.ref = argv[++i];
+  }
+  return args;
+}
+
+function fatal(msg) {
+  console.error(`sync-minnow: FATAL — ${msg}`);
+  process.exit(1);
+}
+
+const { repo, ref } = parseArgs(process.argv.slice(2));
+
+const tarballUrl = `https://github.com/${repo}/archive/refs/heads/${ref}.tar.gz`;
+const work = join(tmpdir(), `minnow-sync-${Date.now()}`);
+mkdirSync(work, { recursive: true });
+
+console.log(`sync-minnow: downloading ${tarballUrl}`);
+const tarPath = join(work, 'repo.tar.gz');
+execSync(`curl -fsL --retry 3 -o ${JSON.stringify(tarPath)} ${JSON.stringify(tarballUrl)}`, {
+  stdio: 'inherit',
+});
+
+const archive = join(work, 'repo');
+execSync(
+  `mkdir ${JSON.stringify(archive)} && tar -xzf ${JSON.stringify(tarPath)} -C ${JSON.stringify(archive)} --strip-components 1`,
+  { stdio: 'inherit' },
+);
+
+// --- src/styles/tokens.css → src/styles/vendor/tokens.css --------------------
+
+const sourceTokensPath = join(archive, 'src', 'styles', 'tokens.css');
+if (!existsSync(sourceTokensPath)) {
+  fatal('src/styles/tokens.css not found in the archive');
+}
+
+// The documented patch (spec §3.1): human-dark and mint-dark are the only two
+// of the 16 blocks that omit the four --mn-syntax-* tokens. Append them just
+// before the closing brace of each block. No-op if upstream ships them already.
+const syntaxPatch = [
+  '  --mn-syntax-command: var(--mn-accent);',
+  '  --mn-syntax-name: var(--mn-accent);',
+  '  --mn-syntax-inline: var(--mn-fg);',
+  '  --mn-syntax-link: var(--mn-accent);',
+];
+
+function singleSelectorBlock(css, themeId) {
+  // Upstream groups each block as :root[...] + .settings-theme-preview[...].
+  // The site uses only :root[data-theme=...], so collapse every grouped
+  // selector to a single one — exactly one [data-theme=...] per block.
+  const re = new RegExp(
+    `:root\\[data-theme="${themeId}"\\],\\s*\\.settings-theme-preview\\[data-theme="${themeId}"\\](\\s*\\{[\\s\\S]*?\\n\\})`,
+  );
+  const match = css.match(re);
+  if (!match) {
+    return css;
+  }
+  return css.replace(match[0], `:root[data-theme="${themeId}"]${match[1]}`);
+}
+
+function applySyntaxPatch(css, themeId) {
+  // The documented patch (spec §3.1): the four --mn-syntax-* tokens on
+  // human-dark and mint-dark, the only two blocks missing them upstream.
+  const re = new RegExp(`(:root\\[data-theme="${themeId}"\\]\\s*\\{)([\\s\\S]*?)(\\n\\})`);
+  const match = css.match(re);
+  if (!match) {
+    fatal(`could not locate the ${themeId} theme block for the --mn-syntax-* patch`);
+  }
+  if (match[2].includes('--mn-syntax-command')) {
+    return css; // upstream ships the tokens now — nothing to patch
+  }
+  return css.replace(match[0], `${match[1]}${match[2]}\n${syntaxPatch.join('\n')}${match[3]}`);
+}
+
+let tokens = readFileSync(sourceTokensPath, 'utf8');
+for (const themeId of [...themes_from(tokens)]) {
+  tokens = singleSelectorBlock(tokens, themeId);
+}
+tokens = applySyntaxPatch(tokens, 'human-dark');
+tokens = applySyntaxPatch(tokens, 'mint-dark');
+
+function themes_from(css) {
+  return new Set([...css.matchAll(/\[data-theme="([^"]+)"\]/g)].map((m) => m[1]));
+}
+
+// Guard: all 16 theme blocks present after patching.
+const themes = new Set([...tokens.matchAll(/\[data-theme="([^"]+)"\]/g)].map((m) => m[1]));
+if (themes.size !== 16) {
+  fatal(
+    `vendored tokens.css has ${themes.size} distinct [data-theme=...] blocks, expected 16: ${[...themes].join(', ')}`,
+  );
+}
+console.log(
+  'sync-minnow: applied the documented --mn-syntax-* patch to human-dark + mint-dark; verified all 16 [data-theme=...] blocks',
+);
+
+const banner = `/* stylelint-disable */
+/*
+ * Generated by scripts/sync-minnow.mjs from ${repo} @ ${ref}.
+ * VERBATIM copy of src/styles/tokens.css — DO NOT EDIT.
+ * Re-run \`npm run sync:minnow\` to refresh.
+ *
+ * Documented patch applied (spec §3.1): the four --mn-syntax-* tokens are
+ * appended to the human-dark and mint-dark blocks, the only two that omit
+ * them upstream.
+ */
+`;
+
+const vendorDir = join(root, 'src', 'styles', 'vendor');
+mkdirSync(vendorDir, { recursive: true });
+writeFileSync(join(vendorDir, 'tokens.css'), banner + tokens);
+console.log('sync-minnow: wrote src/styles/vendor/tokens.css');
+
+// --- documentation/images/*.png → src/assets/screenshots/ --------------------
+
+const imagesDir = join(archive, 'documentation', 'images');
+const shotsDir = join(root, 'src', 'assets', 'screenshots');
+mkdirSync(shotsDir, { recursive: true });
+if (existsSync(imagesDir)) {
+  const pngs = readdirSync(imagesDir).filter((n) => n.endsWith('.png'));
+  const skipped = [];
+  let copied = 0;
+  for (const name of pngs) {
+    if (name === 'app-research.png') {
+      skipped.push(name);
+      continue; // gated app — never shipped to the site
+    }
+    cpSync(join(imagesDir, name), join(shotsDir, name));
+    copied++;
+  }
+  console.log(
+    `sync-minnow: synced ${copied} screenshots to src/assets/screenshots (skipped: ${skipped.join(', ') || 'none'})`,
+  );
+} else {
+  console.log('sync-minnow: no documentation/images in archive, skipped');
+}
+
+// --- public/logos/** → public/brand/ ------------------------------------------
+
+const logosDir = join(archive, 'public', 'logos');
+const brandDir = join(root, 'public', 'brand');
+if (existsSync(logosDir)) {
+  rmSync(brandDir, { recursive: true, force: true });
+  cpSync(logosDir, brandDir, { recursive: true });
+  console.log('sync-minnow: synced public/logos → public/brand');
+} else {
+  console.log('sync-minnow: no public/logos in archive, skipped');
+}
+
+// --- cleanup -------------------------------------------------------------------
+
+rmSync(work, { recursive: true, force: true });
+console.log('sync-minnow: done');
