@@ -1,0 +1,21 @@
+{
+  "$comment": "Performance budgets for minnow.sh (spec §7.8). Checked against dist/ by scripts/check-budgets.mjs (W8-C).",
+  "home": {
+    "htmlGzipMaxKb": 22,
+    "jsGzipMaxKb": 25
+  },
+  "css": {
+    "allPagesGzipMaxKb": 45
+  },
+  "lcpImage": {
+    "maxKb": 180,
+    "format": "avif"
+  },
+  "lighthouse": {
+    "preset": "mobile",
+    "performance": { "min": 98 },
+    "accessibility": { "min": 100 },
+    "bestPractices": { "min": 100 },
+    "seo": { "min": 100 }
+  }
+}

@@ -1,11 +1,19 @@
-# Baseline ignores (created by Minnow git-setup)
-
 # Dependencies
 node_modules/
 
 # Build output
 dist/
 build/
+.astro/
+
+# Generated (never hand-edited)
+src/data/releases.json
+public/llms.txt
+public/llms-full.txt
+src/content/docs
+src/styles/vendor/tokens.css
+public/brand
+src/assets/screenshots
 
 # Environment / secrets
 .env
@@ -14,4 +22,3 @@ build/
 # OS junk
 .DS_Store
 Thumbs.db
-

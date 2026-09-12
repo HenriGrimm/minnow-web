@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-bg: var(--mn-bg);
+  --color-surface-0: var(--mn-surface-0);
+  --color-surface-1: var(--mn-surface-1);
+  --color-surface-2: var(--mn-surface-2);
+  --color-fg: var(--mn-fg);
+  --color-fg-muted: var(--mn-fg-muted);
+  --color-fg-subtle: var(--mn-fg-subtle);
+  --color-on-accent: var(--mn-fg-on-accent);
+  --color-accent: var(--mn-accent);
+  --color-accent-soft: var(--mn-accent-soft);
+  --color-accent-ink: var(--mn-accent-ink);
+  --color-success: var(--mn-success);
+  --color-warning: var(--mn-warning);
+  --color-danger: var(--mn-danger);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+
+  --font-sans: var(--font-ui);
+  --font-mono: var(--font-mono);
+
+  --ease-out: var(--ease-out);
+  --ease-settle: var(--ease-settle);
+}
+
+@layer base {
+  * , *::before, *::after { border-color: var(--mn-border); }
+}
