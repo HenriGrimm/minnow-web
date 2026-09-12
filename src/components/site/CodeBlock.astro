@@ -1,5 +1,5 @@
 ---
-import { codeToHtml } from 'shiki';
+import { codeToHtml, createCssVariablesTheme } from 'shiki';
 import '../../styles/site.css';
 
 interface Props {
@@ -12,14 +12,20 @@ interface Props {
 const { code, lang = 'js', class: className = '', ...rest } = Astro.props as Props;
 
 /**
- * Shiki css-variables theme — the HTML Shiki emits is class-tagged
- * (cm-keyword, cm-string, ...) and the .mn-codeblock CSS in site.css
- * maps those classes onto the app's own --cm-* / --mn-syntax-* tokens,
- * so code recolours with the theme without a rebuild (spec §3.9).
+ * Shiki css-variables theme — the HTML Shiki emits carries inline
+ * `color: var(--cm-…)` on each span; the .mn-codeblock rules in
+ * site.css define those --cm-* variables (mapped onto the app's own
+ * --mn-syntax-* / --mn-* tokens), so code recolours with the page
+ * theme without a rebuild (spec §3.9).
+ *
+ * The theme is the same createCssVariablesTheme() config astro.config.mjs
+ * uses for the markdown pipeline (variablePrefix '--cm-'), emitted inline
+ * here because a bare 'css-variables' string is not a registered theme
+ * name and shiki's resolveTheme throws on it.
  */
 const html = await codeToHtml(code, {
   lang,
-  theme: 'css-variables',
+  theme: createCssVariablesTheme({ variablePrefix: '--cm-' }),
   defaultColor: false,
 });
 ---

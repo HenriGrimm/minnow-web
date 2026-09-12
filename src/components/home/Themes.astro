@@ -1,0 +1,404 @@
+---
+/**
+ * Themes — spec §6.2 §9. "Sixteen built in, which is fifteen more than
+ * strictly necessary." Eight family cards from data/themes.ts, each with
+ * a light/dark toggle and a 4-swatch mini-preview (bg / surface-2 /
+ * accent / fg). Selecting one calls applyTheme so the entire page
+ * recolours through the 160ms transition; the choice persists under the
+ * app's storage keys (minnow.theme / minnow.theme.family). An AppFrame
+ * replica sits beside the picker so the switch is visible on a real
+ * surface.
+ *
+ * The swatch values are static display colours (bg / s2 / accent / fg per
+ * family×mode) so each card shows its target family's true palette
+ * regardless of the page's current theme — the same convention the
+ * ThemeSwitcher's picker swatches use.
+ */
+import AppFrame from '../app/AppFrame.astro';
+import Eyebrow from '../site/Eyebrow.astro';
+import { THEME_FAMILIES } from '../../data/themes';
+
+const families = [...THEME_FAMILIES];
+---
+
+<section id="themes" class="mn-section mn-section-hairline" aria-labelledby="themes-heading">
+  <div class="mn-section-inner mn-themes-inner">
+    <div class="mn-themes-head">
+      <Eyebrow boxed>THEMES</Eyebrow>
+      <h2 id="themes-heading" class="mn-themes-h2">
+        Sixteen built in, which is fifteen more than strictly necessary.
+      </h2>
+      <p class="mn-themes-lead">
+        Pick one — the whole page switches, through the same 160ms settle
+        the app uses. Your pick is remembered on this device, and it is
+        the same pick the app makes, because the storage keys are the
+        app's.
+      </p>
+    </div>
+
+    <div class="mn-themes-grid">
+      <div class="mn-themes-picker" data-themes-picker role="group" aria-label="Theme family">
+        {
+          families.map((family) => (
+            <div class="mn-themes-card" data-themes-card={family.id}>
+              <header class="mn-themes-card-head">
+                <span class="mn-themes-card-name">{family.name}</span>
+                <div
+                  class="mn-themes-card-modes"
+                  role="group"
+                  aria-label={`${family.name} — mode`}
+                >
+                  <button
+                    type="button"
+                    class="mn-themes-card-mode"
+                    data-themes-select={family.dark}
+                    aria-label={`${family.name}, dark`}
+                  >
+                    Dark
+                  </button>
+                  <button
+                    type="button"
+                    class="mn-themes-card-mode"
+                    data-themes-select={family.light}
+                    aria-label={`${family.name}, light`}
+                  >
+                    Light
+                  </button>
+                </div>
+              </header>
+              <p class="mn-themes-card-blurb">{family.blurb}</p>
+              <div class="mn-themes-card-preview" aria-hidden="true">
+                <span
+                  class="mn-themes-swatch mn-themes-swatch-bg"
+                  data-themes-swatch={`${family.id}.bg`}
+                ></span>
+                <span
+                  class="mn-themes-swatch mn-themes-swatch-s2"
+                  data-themes-swatch={`${family.id}.s2`}
+                ></span>
+                <span
+                  class="mn-themes-swatch mn-themes-swatch-accent"
+                  data-themes-swatch={`${family.id}.accent`}
+                ></span>
+                <span
+                  class="mn-themes-swatch mn-themes-swatch-fg"
+                  data-themes-swatch={`${family.id}.fg`}
+                ></span>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+
+      <figure class="mn-themes-frame" aria-label="The app's window under the current theme">
+        <AppFrame />
+      </figure>
+    </div>
+
+    <p class="mn-themes-footnote">
+      Colours come from
+      <a
+        href="https://github.com/HenriGrimm/Minnow/blob/main/src/styles/tokens.css"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        src/styles/tokens.css
+      </a>
+      in the repo — a block of --mn-* variables per theme.
+    </p>
+  </div>
+</section>
+
+<style>
+  /* stylelint-disable custom-property-empty-line-before, declaration-empty-line-before */
+
+  .mn-themes-inner {
+    max-width: var(--container-wide);
+  }
+
+  .mn-themes-head {
+    margin-bottom: 56px;
+  }
+
+  .mn-themes-h2 {
+    margin: 0 0 16px;
+    font-size: var(--fs-h2);
+    font-weight: 600;
+    letter-spacing: var(--tracking-title);
+    line-height: var(--lh-title);
+  }
+
+  .mn-themes-lead {
+    margin: 0;
+    max-width: var(--prose);
+    font-size: var(--fs-lead);
+    line-height: var(--lh-body);
+    color: var(--mn-fg-muted);
+  }
+
+  /* ---------- Picker + frame ---------- */
+
+  .mn-themes-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 48px;
+    align-items: start;
+  }
+
+  @media (width <= 1000px) {
+    .mn-themes-grid {
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+  }
+
+  .mn-themes-picker {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  @media (width <= 560px) {
+    .mn-themes-picker {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .mn-themes-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px;
+    background: color-mix(in srgb, var(--mn-fg) 1.5%, var(--mn-bg));
+    border: 1px solid var(--mn-border);
+    border-radius: var(--radius-lg);
+  }
+
+  .mn-themes-card.is-active {
+    border-color: var(--mn-accent-border);
+    box-shadow: 0 0 0 1px var(--mn-accent-border);
+  }
+
+  .mn-themes-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .mn-themes-card-name {
+    font-size: var(--fs-small);
+    font-weight: 600;
+    letter-spacing: var(--tracking-title);
+  }
+
+  .mn-themes-card-modes {
+    display: inline-flex;
+    gap: 4px;
+  }
+
+  .mn-themes-card-mode {
+    padding: 3px 8px;
+    font: 400 var(--fs-label)/1.4 var(--font-mono);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--mn-fg-muted);
+    background: none;
+    border: 1px solid var(--mn-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .mn-themes-card-mode:hover {
+      color: var(--mn-fg);
+      border-color: var(--mn-border-strong);
+    }
+  }
+
+  .mn-themes-card-mode.is-active {
+    color: var(--mn-fg-on-accent);
+    background: var(--mn-accent);
+    border-color: var(--mn-accent);
+  }
+
+  .mn-themes-card-blurb {
+    margin: 0;
+    font-size: var(--fs-small);
+    line-height: var(--lh-body);
+    color: var(--mn-fg-muted);
+  }
+
+  /* ---------- 4-swatch mini-preview (bg / surface-2 / accent / fg) ---------- */
+
+  .mn-themes-card-preview {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    height: 22px;
+  }
+
+  .mn-themes-swatch {
+    border-radius: 3px;
+    border: 1px solid color-mix(in srgb, var(--mn-fg) 12%, transparent);
+  }
+
+  .mn-themes-swatch-bg { background: #0f1216; }
+  .mn-themes-swatch-s2 { background: #1f242b; }
+  .mn-themes-swatch-accent { background: #9ec5a7; }
+  .mn-themes-swatch-fg { background: #dfe3e8; }
+
+  /* Family × mode overrides — static display colours, sourced from
+     src/styles/vendor/tokens.css (bg / --mn-surface-2 / --mn-accent /
+     --mn-fg per theme block). Display-only: the live page recolours
+     through the tokens. */
+  .mn-themes-card[data-themes-card='swamp'] .mn-themes-swatch-bg { background: #0f1216; }
+  .mn-themes-card[data-themes-card='swamp'] .mn-themes-swatch-s2 { background: #1f242b; }
+  .mn-themes-card[data-themes-card='swamp'] .mn-themes-swatch-accent { background: #9ec5a7; }
+  .mn-themes-card[data-themes-card='swamp'] .mn-themes-swatch-fg { background: #dfe3e8; }
+  .mn-themes-card[data-themes-card='swamp'] .mn-themes-swatch.is-light { background: #f7f7f4; }
+  .mn-themes-card[data-themes-card='swamp'] .mn-themes-swatch-s2.is-light { background: #ededea; }
+  .mn-themes-card[data-themes-card='swamp'] .mn-themes-swatch-accent.is-light { background: #5b8a72; }
+  .mn-themes-card[data-themes-card='swamp'] .mn-themes-swatch-fg.is-light { background: #1c2127; }
+
+  .mn-themes-card[data-themes-card='desert'] .mn-themes-swatch-bg { background: #16140f; }
+  .mn-themes-card[data-themes-card='desert'] .mn-themes-swatch-s2 { background: #27231b; }
+  .mn-themes-card[data-themes-card='desert'] .mn-themes-swatch-accent { background: #d4a574; }
+  .mn-themes-card[data-themes-card='desert'] .mn-themes-swatch-fg { background: #e8dcc6; }
+  .mn-themes-card[data-themes-card='desert'] .mn-themes-swatch.is-light { background: #f7f4ec; }
+  .mn-themes-card[data-themes-card='desert'] .mn-themes-swatch-s2.is-light { background: #ebe6d8; }
+  .mn-themes-card[data-themes-card='desert'] .mn-themes-swatch-accent.is-light { background: #a36f2a; }
+  .mn-themes-card[data-themes-card='desert'] .mn-themes-swatch-fg.is-light { background: #2a2418; }
+
+  .mn-themes-card[data-themes-card='ocean'] .mn-themes-swatch-bg { background: #0d1117; }
+  .mn-themes-card[data-themes-card='ocean'] .mn-themes-swatch-s2 { background: #1d2632; }
+  .mn-themes-card[data-themes-card='ocean'] .mn-themes-swatch-accent { background: #7dd3e8; }
+  .mn-themes-card[data-themes-card='ocean'] .mn-themes-swatch-fg { background: #dde4ed; }
+  .mn-themes-card[data-themes-card='ocean'] .mn-themes-swatch.is-light { background: #f4f6f9; }
+  .mn-themes-card[data-themes-card='ocean'] .mn-themes-swatch-s2.is-light { background: #e4e9f0; }
+  .mn-themes-card[data-themes-card='ocean'] .mn-themes-swatch-accent.is-light { background: #2b7a96; }
+  .mn-themes-card[data-themes-card='ocean'] .mn-themes-swatch-fg.is-light { background: #1a2230; }
+
+  .mn-themes-card[data-themes-card='coral'] .mn-themes-swatch-bg { background: #141416; }
+  .mn-themes-card[data-themes-card='coral'] .mn-themes-swatch-s2 { background: #27272b; }
+  .mn-themes-card[data-themes-card='coral'] .mn-themes-swatch-accent { background: #f5a3a0; }
+  .mn-themes-card[data-themes-card='coral'] .mn-themes-swatch-fg { background: #e6e4e1; }
+  .mn-themes-card[data-themes-card='coral'] .mn-themes-swatch.is-light { background: #fafaf8; }
+  .mn-themes-card[data-themes-card='coral'] .mn-themes-swatch-s2.is-light { background: #ededea; }
+  .mn-themes-card[data-themes-card='coral'] .mn-themes-swatch-accent.is-light { background: #c75651; }
+  .mn-themes-card[data-themes-card='coral'] .mn-themes-swatch-fg.is-light { background: #1c1c1f; }
+
+  .mn-themes-card[data-themes-card='mono'] .mn-themes-swatch-bg { background: #2b2b2b; }
+  .mn-themes-card[data-themes-card='mono'] .mn-themes-swatch-s2 { background: #3a3a3a; }
+  .mn-themes-card[data-themes-card='mono'] .mn-themes-swatch-accent { background: #d4d4d4; }
+  .mn-themes-card[data-themes-card='mono'] .mn-themes-swatch-fg { background: #e8e8e8; }
+  .mn-themes-card[data-themes-card='mono'] .mn-themes-swatch.is-light { background: #f7f7f7; }
+  .mn-themes-card[data-themes-card='mono'] .mn-themes-swatch-s2.is-light { background: #d4d4d4; }
+  .mn-themes-card[data-themes-card='mono'] .mn-themes-swatch-accent.is-light { background: #2b2b2b; }
+  .mn-themes-card[data-themes-card='mono'] .mn-themes-swatch-fg.is-light { background: #2b2b2b; }
+
+  .mn-themes-card[data-themes-card='matrix'] .mn-themes-swatch-bg { background: #040604; }
+  .mn-themes-card[data-themes-card='matrix'] .mn-themes-swatch-s2 { background: #111711; }
+  .mn-themes-card[data-themes-card='matrix'] .mn-themes-swatch-accent { background: #28d250; }
+  .mn-themes-card[data-themes-card='matrix'] .mn-themes-swatch-fg { background: #dce8dc; }
+  .mn-themes-card[data-themes-card='matrix'] .mn-themes-swatch.is-light { background: #eef2ee; }
+  .mn-themes-card[data-themes-card='matrix'] .mn-themes-swatch-s2.is-light { background: #d6dcd6; }
+  .mn-themes-card[data-themes-card='matrix'] .mn-themes-swatch-accent.is-light { background: #0a6b28; }
+  .mn-themes-card[data-themes-card='matrix'] .mn-themes-swatch-fg.is-light { background: #0a120a; }
+
+  .mn-themes-card[data-themes-card='human'] .mn-themes-swatch-bg { background: #0f0f0f; }
+  .mn-themes-card[data-themes-card='human'] .mn-themes-swatch-s2 { background: #262626; }
+  .mn-themes-card[data-themes-card='human'] .mn-themes-swatch-accent { background: #d27428; }
+  .mn-themes-card[data-themes-card='human'] .mn-themes-swatch-fg { background: #ffdbbd; }
+  .mn-themes-card[data-themes-card='human'] .mn-themes-swatch.is-light { background: #fbf1ea; }
+  .mn-themes-card[data-themes-card='human'] .mn-themes-swatch-s2.is-light { background: #eee5de; }
+  .mn-themes-card[data-themes-card='human'] .mn-themes-swatch-accent.is-light { background: #c46820; }
+  .mn-themes-card[data-themes-card='human'] .mn-themes-swatch-fg.is-light { background: #2e2218; }
+
+  .mn-themes-card[data-themes-card='mint'] .mn-themes-swatch-bg { background: #141615; }
+  .mn-themes-card[data-themes-card='mint'] .mn-themes-swatch-s2 { background: #3a3b3a; }
+  .mn-themes-card[data-themes-card='mint'] .mn-themes-swatch-accent { background: #66ffb0; }
+  .mn-themes-card[data-themes-card='mint'] .mn-themes-swatch-fg { background: #ffffff; }
+  .mn-themes-card[data-themes-card='mint'] .mn-themes-swatch.is-light { background: #f2faf6; }
+  .mn-themes-card[data-themes-card='mint'] .mn-themes-swatch-s2.is-light { background: #e6eeea; }
+  .mn-themes-card[data-themes-card='mint'] .mn-themes-swatch-accent.is-light { background: #1fa86a; }
+  .mn-themes-card[data-themes-card='mint'] .mn-themes-swatch-fg.is-light { background: #121a16; }
+
+  /* ---------- The AppFrame replica beside the picker ---------- */
+
+  .mn-themes-frame {
+    margin: 0;
+    min-width: 0;
+  }
+
+  /* ---------- Footnote ---------- */
+
+  .mn-themes-footnote {
+    margin: 36px 0 0;
+    font-size: var(--fs-small);
+    color: var(--mn-fg-subtle);
+  }
+
+  .mn-themes-footnote a {
+    color: var(--mn-accent-ink);
+  }
+</style>
+
+<script>
+  import { applyTheme, themeState } from '../../scripts/theme';
+  import { THEME_FAMILIES, THEME_SWATCHES } from '../../data/themes';
+
+  // data-swatch="family.bg" values → fixed display colours per family×mode.
+  const SWATCHES: Record<string, Record<'bg' | 's2' | 'accent' | 'fg', string>> =
+    Object.fromEntries(
+      (THEME_FAMILIES as readonly { dark: string; light: string }[]).map((f) => [
+        [f.dark, THEME_SWATCHES[f.dark as keyof typeof THEME_SWATCHES]],
+        [f.light, THEME_SWATCHES[f.light as keyof typeof THEME_SWATCHES]],
+      ]),
+    );
+
+  const preview = (familyId: string, mode: 'dark' | 'light'): void => {
+    const darkId = `${familyId}-dark`;
+    const lightId = `${familyId}-light`;
+    const card = document.querySelector<HTMLElement>(
+      `[data-themes-card="${familyId}"]`,
+    );
+    if (!card) return;
+
+    card.querySelectorAll<HTMLElement>('[data-themes-swatch]').forEach((swatch) => {
+      const prop = swatch.dataset.swatch?.split('.')[1] as 'bg' | 's2' | 'accent' | 'fg';
+      const isLight = mode === 'light';
+      const source = isLight ? SWATCHES[lightId] : SWATCHES[darkId];
+      swatch.style.background = source?.[prop] ?? '';
+      swatch.classList.toggle('is-light', isLight);
+    });
+  };
+
+  const syncActive = (): void => {
+    const { family, mode } = themeState();
+    document
+      .querySelectorAll<HTMLElement>('[data-themes-card]')
+      .forEach((card) => card.classList.toggle('is-active', card.dataset.themesCard === family));
+    document
+      .querySelectorAll<HTMLButtonElement>('[data-themes-select]')
+      .forEach((btn) => {
+        const active = btn.dataset.themesSelect === `${family}-${mode}`;
+        btn.classList.toggle('is-active', active);
+        btn.setAttribute('aria-pressed', String(active));
+      });
+    (THEME_FAMILIES as readonly { id: string }[]).forEach((f) => {
+      preview(f.id, mode);
+    });
+  };
+
+  document
+    .querySelectorAll<HTMLButtonElement>('[data-themes-select]')
+    .forEach((btn) => {
+      btn.addEventListener('click', () => {
+        applyTheme(btn.dataset.themesSelect ?? '');
+        syncActive();
+      });
+    });
+
+  syncActive();
+</script>

@@ -588,7 +588,26 @@
 }
 
 /* ---------- CodeBlock (spec §3.9) ---------- */
+
+/* Shiki emits inline `color: var(--cm-…)` per span (createCssVariablesTheme,
+   variablePrefix '--cm-'). The variables below bridge those onto the app's
+   own syntax tokens so code recolours with the page theme. The class-based
+   rules that follow are kept as a fallback for output that carries classes. */
+
 .mn-codeblock {
+  --cm-foreground: var(--mn-fg);
+  --cm-background: var(--tool-call-pre-bg);
+  --cm-token-keyword: var(--mn-syntax-name);
+  --cm-token-string: var(--mn-fg-muted);
+  --cm-token-comment: var(--mn-fg-subtle);
+  --cm-token-constant: var(--mn-fg-muted);
+  --cm-token-function: var(--mn-accent-ink);
+  --cm-token-punctuation: var(--mn-fg-subtle);
+  --cm-token-string-expression: var(--mn-fg-muted);
+  --cm-token-link: var(--mn-syntax-link);
+  --cm-token-inserted: var(--mn-success-ink);
+  --cm-token-removed: var(--mn-danger-ink);
+
   margin: 0;
   padding: 14px 16px;
   overflow-x: auto;

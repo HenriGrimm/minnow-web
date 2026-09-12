@@ -1,0 +1,217 @@
+---
+/**
+ * OpenSeams — spec §6.2 §8. "Open at the seams." H2 is the README's
+ * open-source line; five cards (Skills, Tools, Agents, Prompts, Themes)
+ * each carry a real snippet rendered through CodeBlock (the app's
+ * syntax colours, which follow the page theme) and a link to the doc
+ * that owns that seam.
+ */
+import CodeBlock from '../site/CodeBlock.astro';
+import Eyebrow from '../site/Eyebrow.astro';
+import { SITE } from '../../data/site';
+
+const SKILLS_SNIPPET = `# ~/.minnow/skills/code-review.md
+name: code-review
+description: Review the current diff against the repo's conventions.
+
+## Prompt
+1. \`git diff\` — what changed, hunk by hunk.
+2. Name the risk in each hunk in one line.
+3. Fix the two that would bite first.`;
+
+const TOOLS_SNIPPET = `# Settings → Tools
+web_search        Full
+write_file        Ask
+execute_command   Ask
+delete_path       Off`;
+
+const AGENTS_SNIPPET = `# Orchestration — plan, then waves
+builder:  Builder, Tester        # isolated worktrees
+review:   Reviewer               # no nested spawns
+board:    status, logs, diff per step`;
+
+const PROMPTS_SNIPPET = `# ~/.minnow/prompts/quick-edit.md
+Use the existing naming, types, and error handling.
+Smallest correct diff — do not refactor adjacent code.
+Every edit must include its imports. Run the tests.`;
+
+const THEMES_SNIPPET = `# ~/.minnow/config.json
+{
+  "theme": "swamp-dark",
+  "followSystem": false
+}
+# settings/theme.css resolves under every data-theme`;
+
+const cards = [
+  {
+    id: 'skills',
+    title: 'Skills',
+    body:
+      'Markdown files with a name, a description, and a prompt. Edit one in your editor and the next session reads it — the skills live in ~/.minnow/skills, versioned like everything else.',
+    snippet: SKILLS_SNIPPET,
+    lang: 'md',
+    link: '/docs/skills',
+    linkLabel: 'Skills →',
+  },
+  {
+    id: 'tools',
+    title: 'Tools',
+    body:
+      '105 built-in tools, each Full, Ask, or Off. The permission set is plain text in settings, and the agent names every tool it calls in the transcript.',
+    snippet: TOOLS_SNIPPET,
+    lang: 'ini',
+    link: '/docs/tools',
+    linkLabel: 'Tools →',
+  },
+  {
+    id: 'agents',
+    title: 'Agents',
+    body:
+      'Eight sub-agent types, spawned by name. Every board task runs in its own worktree and branch, and nothing a sub-agent spawns can spawn further.',
+    snippet: AGENTS_SNIPPET,
+    lang: 'md',
+    link: '/docs/agents',
+    linkLabel: 'Agents →',
+  },
+  {
+    id: 'prompts',
+    title: 'Prompts',
+    body:
+      'The payloads are files. Mode prompts, Quick Edit prompts, and your own additions all sit in ~/.minnow, so what the model receives can be read, diffed, and changed.',
+    snippet: PROMPTS_SNIPPET,
+    lang: 'md',
+    link: '/docs/prompts',
+    linkLabel: 'Prompts →',
+  },
+  {
+    id: 'themes',
+    title: 'Themes',
+    body:
+      'Sixteen themes, one token file. A theme is a block of --mn-* variables resolved under data-theme — pick one, or write your own block, and the whole app follows.',
+    snippet: THEMES_SNIPPET,
+    lang: 'json',
+    link: '/docs/themes',
+    linkLabel: 'Themes →',
+  },
+];
+---
+
+<section id="open-seams" class="mn-section mn-section-hairline" aria-labelledby="open-seams-heading">
+  <div class="mn-section-inner mn-open-seams-inner">
+    <Eyebrow boxed>OPEN AT THE SEAMS</Eyebrow>
+    <h2 id="open-seams-heading" class="mn-open-seams-h2">
+      Free and open source — AGPL-3.0-or-later.
+    </h2>
+    <p class="mn-open-seams-lead">
+      The seams are open by construction: each one is a file you can read
+      on disk, not a setting you can only toggle. Here is what that looks
+      like.
+    </p>
+
+    <div class="mn-open-seams-grid">
+      {
+        cards.map((card) => (
+          <article class="mn-open-seams-card" data-open-seams-card={card.id}>
+            <h3 class="mn-open-seams-card-title">{card.title}</h3>
+            <p class="mn-open-seams-card-body">{card.body}</p>
+            <CodeBlock code={card.snippet} lang={card.lang} class="mn-open-seams-snippet" />
+            <a
+              class="mn-open-seams-card-link"
+              href={card.link}
+            >
+              {card.linkLabel}
+            </a>
+          </article>
+        ))
+      }
+    </div>
+
+    <p class="mn-open-seams-footnote">
+      The source is at <a href={SITE.repoUrl} target="_blank" rel="noopener noreferrer">{SITE.repo}</a>.
+    </p>
+  </div>
+</section>
+
+<style>
+  /* stylelint-disable custom-property-empty-line-before, declaration-empty-line-before */
+
+  .mn-open-seams-inner {
+    max-width: var(--container-wide);
+  }
+
+  .mn-open-seams-h2 {
+    margin: 0 0 16px;
+    font-size: var(--fs-h2);
+    font-weight: 600;
+    letter-spacing: var(--tracking-title);
+    line-height: var(--lh-title);
+  }
+
+  .mn-open-seams-lead {
+    margin: 0 0 48px;
+    max-width: var(--prose);
+    font-size: var(--fs-lead);
+    line-height: var(--lh-body);
+    color: var(--mn-fg-muted);
+  }
+
+  /* ---------- The five cards ---------- */
+
+  .mn-open-seams-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  @media (width <= 900px) {
+    .mn-open-seams-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .mn-open-seams-card {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 20px;
+    background: color-mix(in srgb, var(--mn-fg) 1.5%, var(--mn-bg));
+    border: 1px solid var(--mn-border);
+    border-radius: var(--radius-lg);
+  }
+
+  .mn-open-seams-card-title {
+    margin: 0;
+    font-size: var(--fs-h3);
+    font-weight: 600;
+    letter-spacing: var(--tracking-title);
+  }
+
+  .mn-open-seams-card-body {
+    margin: 0;
+    font-size: var(--fs-small);
+    line-height: var(--lh-body);
+    color: var(--mn-fg-muted);
+  }
+
+  .mn-open-seams-snippet {
+    align-self: stretch;
+    flex: 1;
+  }
+
+  .mn-open-seams-card-link {
+    align-self: flex-start;
+    font-size: var(--fs-small);
+    font-weight: 600;
+    color: var(--mn-accent-ink);
+  }
+
+  .mn-open-seams-footnote {
+    margin: 36px 0 0;
+    font-size: var(--fs-small);
+    color: var(--mn-fg-subtle);
+  }
+
+  .mn-open-seams-footnote a {
+    color: var(--mn-accent-ink);
+  }
+</style>

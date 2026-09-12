@@ -1,0 +1,176 @@
+---
+/**
+ * Yours — spec §6.2 §10. "Completely yours." The five README bullets in
+ * substance: everything lives in ~/.minnow, and you can read, edit,
+ * diff, and version it. The tree, in mono. Two pull quotes. No
+ * padlocks, no shields, no red — the point is openness, not security
+ * theater.
+ */
+import Eyebrow from '../site/Eyebrow.astro';
+
+const bullets = [
+  {
+    title: 'Your files, on your disk',
+    body:
+      'Chats, settings, memories, and downloads are files under ~/.minnow. No proprietary store, no private format — a folder you already know how to back up.',
+  },
+  {
+    title: 'Edit anything by hand',
+    body:
+      'Skills, prompts, and tool permissions are plain text. Change one in your editor and the next session reads it — no UI round-trip required.',
+  },
+  {
+    title: 'The models are yours to point at',
+    body:
+      'Local or cloud, whichever fits. Your key stays in your settings file, and nothing you point at receives anything you did not ask to send.',
+  },
+  {
+    title: 'No telemetry, no accounts',
+    body:
+      'There is nothing to opt out of, because there is nothing collecting. The app does not phone home, and there is no sign-in gate between you and your own machine.',
+  },
+  {
+    title: 'Version it like code',
+    body:
+      '~/.minnow is a directory. Point a git repo at it and the history of your settings, skills, and skills-you-wrote-yourself lands in the same log as your code.',
+  },
+];
+
+const tree = `~/.minnow
+├── chats/
+├── config/
+├── brain/
+├── models/
+├── secrets/
+├── skills/
+└── tools/`;
+---
+
+<section id="yours" class="mn-section mn-section-hairline" aria-labelledby="yours-heading">
+  <div class="mn-section-inner mn-yours-inner">
+    <Eyebrow boxed>COMPLETELY YOURS</Eyebrow>
+    <h2 id="yours-heading" class="mn-yours-h2">
+      Nothing you did is ever out of your hands.
+    </h2>
+
+    <div class="mn-yours-grid">
+      <ul class="mn-yours-bullets">
+        {
+          bullets.map((bullet) => (
+            <li class="mn-yours-bullet" data-yours-bullet>
+              <h3 class="mn-yours-bullet-title">{bullet.title}</h3>
+              <p class="mn-yours-bullet-body">{bullet.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+
+      <pre class="mn-yours-tree" aria-label="Directory tree of the ~/.minnow workspace">
+        <code>{tree}</code>
+      </pre>
+    </div>
+
+    <blockquote class="mn-yours-quote">
+      <p>The point of a dotfile is that you can open it.</p>
+    </blockquote>
+    <blockquote class="mn-yours-quote mn-yours-quote-last">
+      <p>If it matters to you, it is in a file you own.</p>
+    </blockquote>
+  </div>
+</section>
+
+<style>
+  /* stylelint-disable custom-property-empty-line-before, declaration-empty-line-before */
+
+  .mn-yours-inner {
+    max-width: 1000px;
+  }
+
+  .mn-yours-h2 {
+    margin: 0 0 48px;
+    font-size: var(--fs-h2);
+    font-weight: 600;
+    letter-spacing: var(--tracking-title);
+    line-height: var(--lh-title);
+  }
+
+  .mn-yours-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: 48px;
+    align-items: start;
+  }
+
+  @media (width <= 900px) {
+    .mn-yours-grid {
+      grid-template-columns: 1fr;
+      gap: 36px;
+    }
+  }
+
+  /* ---------- The five bullets ---------- */
+
+  .mn-yours-bullets {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .mn-yours-bullet {
+    padding: 18px 0;
+    border-top: 1px solid var(--mn-border);
+  }
+
+  .mn-yours-bullet:last-child {
+    border-bottom: 1px solid var(--mn-border);
+  }
+
+  .mn-yours-bullet-title {
+    margin: 0 0 6px;
+    font-size: var(--fs-h3);
+    font-weight: 600;
+    letter-spacing: var(--tracking-title);
+  }
+
+  .mn-yours-bullet-body {
+    margin: 0;
+    font-size: var(--fs-small);
+    line-height: var(--lh-body);
+    color: var(--mn-fg-muted);
+  }
+
+  /* ---------- The ~/.minnow tree ---------- */
+
+  .mn-yours-tree {
+    margin: 0;
+    padding: 18px 20px;
+    overflow-x: auto;
+    font: 400 var(--fs-mono-sm)/1.6 var(--font-mono);
+    color: var(--mn-fg-muted);
+    background: var(--mn-surface-0);
+    border: 1px solid var(--mn-border);
+    border-radius: var(--radius-lg);
+  }
+
+  .mn-yours-tree code {
+    font: inherit;
+  }
+
+  /* ---------- The pull quotes ---------- */
+
+  .mn-yours-quote {
+    margin: 36px 0 0;
+  }
+
+  .mn-yours-quote-last {
+    margin-top: 12px;
+  }
+
+  .mn-yours-quote p {
+    margin: 0;
+    font-size: var(--fs-lead);
+    line-height: var(--lh-body);
+    font-style: italic;
+    color: var(--mn-fg-muted);
+  }
+</style>
