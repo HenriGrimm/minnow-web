@@ -1,0 +1,150 @@
+---
+/**
+ * Changelog — spec §6.5. Build-time GitHub Releases (W6-A data layer):
+ * left rail with version + date sticky per entry, right column with the
+ * release notes rendered as markdown. Latest first. Version chips in mono;
+ * pre-releases marked BETA with a --mn-warning-border chip (ChangelogEntry).
+ * The RSS feed lives at /changelog/rss.xml.
+ */
+import { createMarkdownProcessor } from '@astrojs/markdown-remark';
+import { createCssVariablesTheme } from 'shiki';
+import Base from '../../layouts/Base.astro';
+import Eyebrow from '../../components/site/Eyebrow.astro';
+import ChangelogEntry from '../../components/changelog/ChangelogEntry.astro';
+import { getReleases } from '../../data/releases';
+import { SITE } from '../../data/site';
+import '../../styles/site.css';
+
+/** ISO-8601 → the rail date line: 12 Sep 2026. */
+function formatDate(iso: string | null): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return new Intl.DateTimeFormat('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(d);
+}
+
+const releases = getReleases();
+const latest = releases[0];
+
+/** Same shiki CSS-variable theme the site-wide markdown config uses (spec §3.9). */
+const md = await createMarkdownProcessor({
+  syntaxHighlight: { type: 'shiki' },
+  shikiConfig: {
+    theme: createCssVariablesTheme({ variablePrefix: '--cm-' }),
+    wrap: false,
+  },
+});
+
+/** Render each release's markdown body once, at build time. */
+const rendered = new Map<string, string>();
+for (const release of releases) {
+  const body = release.body.trim();
+  if (!body) {
+    rendered.set(release.version, '');
+    continue;
+  }
+  const { code } = await md.render(body);
+  rendered.set(release.version, code);
+}
+
+/** Plain-text lead line of the latest notes, for the page description. */
+const leadLine = (latest.body ?? '')
+  .split(/\r?\n/)
+  .map((l) => l.trim())
+  .find((l) => l && !/^[#>|`*\-[\]!_-]/.test(l))
+  ?? '';
+const description = `Release notes for Minnow — latest v${latest.version}, ${formatDate(latest.publishedAt)}.`
+  + (leadLine ? ` ${leadLine.replace(/[#>*`[\]()|_-]/g, '').trim().slice(0, 140)}` : '');
+---
+
+<Base>
+  <title>Changelog — Minnow</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={SITE.url + '/changelog'} />
+  <link
+    rel="alternate"
+    type="application/rss+xml"
+    title="Minnow — Changelog"
+    href={SITE.url + '/changelog/rss.xml'}
+  />
+  <section class="mn-cl" aria-labelledby="changelog-heading">
+    <div class="mn-cl-head">
+      <Eyebrow boxed>CHANGELOG</Eyebrow>
+      <h1 id="changelog-heading" class="mn-cl-h1">Releases</h1>
+      <p class="mn-cl-lead">
+        Every build, latest first. The notes are the GitHub release
+        body, unedited. Subscribe at
+        <a href="/changelog/rss.xml" rel="alternate" type="application/rss+xml">/changelog/rss.xml</a>
+        to get each one.
+      </p>
+    </div>
+
+    <div class="mn-cl-list">
+      {
+        releases.map((release) => (
+          <ChangelogEntry
+            release={release}
+            html={rendered.get(release.version) ?? ''}
+            date={formatDate(release.publishedAt)}
+          />
+        ))
+      }
+    </div>
+  </section>
+</Base>
+
+<style>
+  /* stylelint-disable custom-property-empty-line-before, declaration-empty-line-before */
+
+  .mn-cl {
+    padding: calc(var(--section-y) * 0.75) var(--gutter) var(--section-y);
+  }
+
+  .mn-cl-head {
+    max-width: var(--container);
+    margin: 0 auto 64px;
+  }
+
+  .mn-cl-h1 {
+    margin: 0 0 16px;
+    font-size: var(--fs-h1);
+    font-weight: 600;
+    letter-spacing: var(--tracking-title);
+    line-height: var(--lh-title);
+  }
+
+  .mn-cl-lead {
+    margin: 0;
+    max-width: var(--prose);
+    font-size: var(--fs-lead);
+    line-height: var(--lh-body);
+    color: var(--mn-fg-muted);
+  }
+
+  .mn-cl-lead a {
+    font: 500 var(--fs-mono-sm)/1.4 var(--font-mono);
+    color: var(--mn-accent-ink);
+    text-decoration: none;
+    border-bottom: 1px solid var(--mn-accent-border);
+    transition: color var(--duration-fast) var(--ease-out),
+                border-color var(--duration-fast) var(--ease-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .mn-cl-lead a:hover {
+      color: var(--mn-fg);
+      border-bottom-color: var(--mn-accent);
+    }
+  }
+
+  .mn-cl-list {
+    max-width: var(--container);
+    margin: 0 auto;
+  }
+
+</style>

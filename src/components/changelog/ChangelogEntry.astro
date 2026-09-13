@@ -1,0 +1,277 @@
+---
+/**
+ * ChangelogEntry — one row of /changelog (spec §6.5). Sticky left rail
+ * (version chip + date), right column with the release notes. Pre-releases
+ * carry the BETA chip with a --mn-warning border.
+ */
+import { SITE } from '../../data/site';
+import type { Release } from '../../data/releases';
+
+interface Props {
+  release: Release;
+  /** Pre-rendered markdown body (HTML). */
+  html: string;
+  /** Formatted date line, e.g. "12 Sep 2026". Empty when unknown. */
+  date: string;
+}
+
+const { release, html, date } = Astro.props as Props;
+---
+
+<article class="mn-cl-entry" aria-labelledby={`cl-${release.version}-heading`}>
+  <div class="mn-cl-rail">
+    <a
+      class={`mn-cl-chip ${release.prerelease ? 'mn-cl-chip--beta' : ''}`}
+      href={`https://github.com/${SITE.repo}/releases/tag/v${release.version}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`v${release.version}${release.prerelease ? ' (beta)' : ''} on GitHub`}
+    >
+      v{release.version}
+      {release.prerelease ? <span class="mn-cl-beta">BETA</span> : null}
+    </a>
+    {date ? <time class="mn-cl-date" datetime={release.publishedAt ?? undefined}>{date}</time> : null}
+  </div>
+  <div class="mn-cl-notes">
+    <h2 id={`cl-${release.version}-heading`} class="mn-cl-h2">
+      {release.prerelease ? 'BETA' : release.name.replace(/^v?\d+\.\d+\.\d+/i, '').trim() || `Release v${release.version}`}
+    </h2>
+    <div class="mn-cl-body" dangerouslySetInnerHTML={{ __html: html }} />
+  </div>
+</article>
+
+<style>
+  /* stylelint-disable custom-property-empty-line-before, declaration-empty-line-before */
+
+  .mn-cl-entry {
+    display: grid;
+    grid-template-columns: 172px minmax(0, 1fr);
+    gap: 0 56px;
+    padding: 56px 0;
+    border-top: 1px solid var(--mn-border);
+  }
+
+  @media (width <= 767px) {
+    .mn-cl-entry {
+      grid-template-columns: 1fr;
+      gap: 20px;
+      padding: 44px 0;
+    }
+  }
+
+  /* ---------- Left rail: version chip + date, sticky per entry ---------- */
+
+  .mn-cl-rail {
+    position: sticky;
+    top: calc(64px + 24px); /* nav height + breathing room */
+    align-self: start;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .mn-cl-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 10px;
+    font: 600 var(--fs-mono-sm)/1.3 var(--font-mono);
+    letter-spacing: 0;
+    color: var(--mn-fg);
+    text-decoration: none;
+    border: 1px solid var(--mn-border-strong);
+    border-radius: var(--radius-sm);
+    transition: color var(--duration-fast) var(--ease-out),
+                border-color var(--duration-fast) var(--ease-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .mn-cl-chip:hover {
+      border-color: var(--mn-fg-subtle);
+    }
+  }
+
+  /* Pre-release: the metric colour is earned — this is a state, measured
+     against the stable channel. --mn-warning border per spec §6.5. */
+  .mn-cl-chip--beta {
+    border-color: var(--mn-warning);
+  }
+
+  .mn-cl-beta {
+    padding: 2px 5px;
+    font: 600 var(--fs-label)/1.3 var(--font-mono);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--mn-fg-muted);
+    border-radius: 3px;
+    background: var(--mn-warning-soft);
+  }
+
+  .mn-cl-date {
+    font: 400 var(--fs-label)/1.4 var(--font-mono);
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+    color: var(--mn-fg-subtle);
+  }
+
+  /* ---------- Right column: the notes ---------- */
+
+  .mn-cl-notes {
+    min-width: 0;
+  }
+
+  .mn-cl-h2 {
+    margin: 2px 0 18px;
+    font-size: var(--fs-h3);
+    font-weight: 600;
+    letter-spacing: var(--tracking-title);
+    line-height: var(--lh-title);
+    color: var(--mn-fg);
+  }
+
+  /* Release notes as markdown — the app's prose rules, adapted for the web. */
+
+  .mn-cl-body {
+    max-width: var(--prose);
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
+    color: var(--mn-fg-muted);
+  }
+
+  .mn-cl-body > :first-child {
+    margin-top: 0;
+  }
+
+  .mn-cl-body > :last-child {
+    margin-bottom: 0;
+  }
+
+  .mn-cl-body p {
+    margin: 0.7em 0;
+  }
+
+  .mn-cl-body h1,
+  .mn-cl-body h2,
+  .mn-cl-body h3,
+  .mn-cl-body h4 {
+    margin: 1.2em 0 0.5em;
+    font-size: var(--fs-h3);
+    font-weight: 600;
+    letter-spacing: var(--tracking-title);
+    line-height: var(--lh-title);
+    color: var(--mn-fg);
+  }
+
+  .mn-cl-body h1 {
+    font-size: var(--fs-h2);
+  }
+
+  .mn-cl-body h2 {
+    font-size: var(--fs-h3);
+  }
+
+  .mn-cl-body h3,
+  .mn-cl-body h4 {
+    font-size: var(--fs-body);
+  }
+
+  .mn-cl-body ul,
+  .mn-cl-body ol {
+    margin: 0.7em 0;
+    padding-left: 1.4em;
+  }
+
+  .mn-cl-body li {
+    margin: 0.35em 0;
+  }
+
+  .mn-cl-body li > ul,
+  .mn-cl-body li > ol {
+    margin: 0.25em 0;
+  }
+
+  .mn-cl-body a {
+    color: var(--mn-accent-ink);
+    text-decoration: underline;
+    text-decoration-color: var(--mn-accent-border);
+    text-underline-offset: 2px;
+    transition: color var(--duration-fast) var(--ease-out),
+                text-decoration-color var(--duration-fast) var(--ease-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .mn-cl-body a:hover {
+      color: var(--mn-fg);
+      text-decoration-color: var(--mn-accent);
+    }
+  }
+
+  .mn-cl-body code {
+    padding: 2px 5px;
+    font: 400 var(--fs-mono-sm)/1.4 var(--font-mono);
+    color: var(--mn-syntax-inline);
+    background: var(--mn-surface-2);
+    border-radius: 4px;
+  }
+
+  .mn-cl-body pre {
+    margin: 0.9em 0;
+    padding: 14px 16px;
+    overflow-x: auto;
+    background: var(--tool-call-pre-bg);
+    border: 1px solid var(--mn-border);
+    border-radius: var(--radius-md);
+  }
+
+  .mn-cl-body pre code {
+    display: block;
+    padding: 0;
+    font: 400 var(--fs-mono-sm)/1.5 var(--font-mono);
+    color: var(--mn-syntax-inline);
+    background: none;
+    border-radius: 0;
+  }
+
+  .mn-cl-body blockquote {
+    margin: 0.9em 0;
+    padding: 4px 0 4px 16px;
+    border-left: 1px solid var(--mn-border-strong);
+    color: var(--mn-fg-muted);
+  }
+
+  .mn-cl-body blockquote p {
+    margin: 0.3em 0;
+  }
+
+  .mn-cl-body table {
+    width: 100%;
+    margin: 0.9em 0;
+    border-collapse: collapse;
+    font-size: var(--fs-small);
+  }
+
+  .mn-cl-body th,
+  .mn-cl-body td {
+    padding: 7px 12px;
+    text-align: left;
+    border: 1px solid var(--mn-border);
+  }
+
+  .mn-cl-body th {
+    font-weight: 600;
+    background: var(--mn-surface-1);
+  }
+
+  .mn-cl-body hr {
+    margin: 1.4em 0;
+    border: none;
+    border-top: 1px solid var(--mn-border);
+  }
+
+  .mn-cl-body img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-md);
+  }
+</style>
