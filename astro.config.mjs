@@ -3,6 +3,7 @@ import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
+import pagefind from 'astro-pagefind';
 import { createCssVariablesTheme } from 'shiki';
 
 // https://astro.build/config
@@ -12,7 +13,7 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
   },
-  integrations: [mdx(), sitemap()],
+  integrations: [mdx(), sitemap(), pagefind()],
   markdown: {
     shikiConfig: {
       // Emit CSS variables so syntax colours are mapped onto the site's

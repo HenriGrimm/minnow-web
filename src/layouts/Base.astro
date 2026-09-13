@@ -6,6 +6,7 @@ import '../styles/theme-transitions.css';
 import '../styles/theme.css';
 import Nav from '../components/site/Nav.astro';
 import Footer from '../components/site/Footer.astro';
+import SearchPalette from '../components/site/SearchPalette.astro';
 ---
 <!doctype html>
 <html lang="en" data-theme="human-dark">
@@ -70,6 +71,7 @@ import Footer from '../components/site/Footer.astro';
   <body>
     <a class="mn-skip-link" href="#main">Skip to content</a>
     <Nav />
+    <SearchPalette />
     <main id="main">
       <slot />
     </main>
@@ -80,12 +82,14 @@ import Footer from '../components/site/Footer.astro';
       import { initReveal, parkWhenHidden } from '../scripts/motion';
       import { initSeams } from '../scripts/seams';
       import { initBuildLoop } from '../scripts/build-loop';
+      import { initSearch } from '../scripts/search';
       initTheme();
       initCopyButtons();
       initReveal();
       initSeams();
       parkWhenHidden();
       initBuildLoop();
+      initSearch();
     </script>
   </body>
 </html>

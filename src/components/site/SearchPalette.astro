@@ -1,0 +1,57 @@
+---
+/**
+ * SearchPalette.astro — command-palette search UI (W7-C).
+ *
+ * A fixed overlay + panel styled purely with the --mn-* / --radius /
+ * --duration / --ease tokens (no new colours). The panel hosts the Pagefind
+ * default UI; src/scripts/search.ts drives open/close, Ctrl/Cmd+K, Esc,
+ * arrow-key result selection and keyboard search via the Pagefind JS API.
+ */
+import '../../styles/search.css';
+---
+
+<aside
+  data-search
+  class="mn-search"
+  aria-hidden="true"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Search the docs"
+>
+  <div
+    class="mn-search-panel"
+    tabindex="-1"
+  >
+    <div class="mn-search-bar">
+      <svg viewBox="0 0 16 16" class="mn-search-icon" aria-hidden="true">
+        <path d="M10.68 11.74a6 6 0 1 1 1.06-1.06l3.04 3.04a.75.75 0 1 1-1.06 1.06l-3.04-3.04Zm-4.68-3.56a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />
+      </svg>
+      <input
+        type="text"
+        data-search-input
+        class="mn-search-input"
+        placeholder="Search the docs…"
+        autocomplete="off"
+        spellcheck="false"
+        aria-label="Search the docs"
+      />
+      <button type="button" data-search-close class="mn-search-close" aria-label="Close search">
+        <svg viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.75.75 0 1 1 1.06 1.06L9.06 8l3.22 3.22a.75.75 0 1 1-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 0 1-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z" />
+        </svg>
+      </button>
+    </div>
+    <div class="mn-search-results" data-search-results></div>
+    <div class="mn-search-footer">
+      <span class="mn-search-hint">
+        <kbd class="mn-search-kbd">↑</kbd><kbd class="mn-search-kbd">↓</kbd> navigate
+      </span>
+      <span class="mn-search-hint">
+        <kbd class="mn-search-kbd">↵</kbd> open
+      </span>
+      <span class="mn-search-hint">
+        <kbd class="mn-search-kbd">esc</kbd> close
+      </span>
+    </div>
+  </div>
+</aside>

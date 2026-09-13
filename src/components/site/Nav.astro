@@ -51,6 +51,16 @@ const starLabel = stars > 0 ? stars.toLocaleString('en-US') : '—';
       <span>{starLabel}</span>
       </a>
 
+      <button type="button" class="mn-search-trigger" data-search-trigger aria-label="Search the docs (press Control or Command plus K)">
+        <svg viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M10.68 11.74a6 6 0 1 1 1.06-1.06l3.04 3.04a.75.75 0 1 1-1.06 1.06l-3.04-3.04Zm-4.68-3.56a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />
+        </svg>
+        <span class="mn-search-trigger-keys" aria-hidden="true">
+          <kbd class="mn-search-trigger-kbd">⌘</kbd>
+          <kbd class="mn-search-trigger-kbd">K</kbd>
+        </span>
+      </button>
+
       <ThemeSwitcher />
 
       <a class="mn-icon-btn" href={SITE.discord} target="_blank" rel="noopener noreferrer" aria-label="Join the Discord">
@@ -102,9 +112,11 @@ const starLabel = stars > 0 ? stars.toLocaleString('en-US') : '—';
   import { initNav } from '../../scripts/nav';
   import { initSheet } from '../../scripts/sheet';
   import { initThemeSwitcher } from '../../scripts/theme-switch';
+  import { openSearch } from '../../scripts/search';
 
   initNav();
   initSheet();
+  document.querySelector<HTMLElement>('[data-search-trigger]')?.addEventListener('click', () => openSearch());
   const root = document.querySelector<HTMLElement>('[data-theme-switcher]');
   if (root) initThemeSwitcher(root);
 </script>
