@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "astro dev",
     "sync:minnow": "node scripts/sync-minnow.mjs --repo HenriGrimm/Minnow --ref main",
+    "fetch:releases": "node scripts/fetch-releases.mjs --repo HenriGrimm/Minnow",
     "build": "astro build",
     "preview": "astro preview",
     "build:brand": "node scripts/build-brand-assets.mjs",
