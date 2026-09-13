@@ -1,0 +1,97 @@
+---
+/**
+ * /404 — spec §6.6. The fish glyph, "This page swam off.", links home
+ * and to docs. One joke is allowed (and used).
+ */
+import Base from '../layouts/Base.astro';
+import Glyph from '../components/icons/Glyph.astro';
+---
+
+<Base>
+  <title>Page not found — Minnow</title>
+  <meta
+    name="description"
+    content="This page swam off. Go home or read the docs."
+  />
+  <section class="mn-404" aria-labelledby="not-found-heading">
+    <Glyph size={72} label="A fish" />
+    <h1 id="not-found-heading" class="mn-404-h1">This page swam off.</h1>
+    <p class="mn-404-sub">
+      It probably did not live here in the first place — the river
+      re-routes. Head back to dry land.
+    </p>
+    <nav class="mn-404-actions" aria-label="Where to go">
+      <a class="mn-404-btn mn-404-btn-primary" href="/">Go home</a>
+      <a class="mn-404-btn" href="/docs">Read the docs</a>
+    </nav>
+  </section>
+</Base>
+
+<style>
+  .mn-404 {
+    min-height: 60vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: calc(var(--section-y) * 0.75) var(--gutter) var(--section-y);
+    color: var(--mn-fg);
+  }
+
+  .mn-404-h1 {
+    margin: 24px 0 12px;
+    font-size: var(--fs-h1);
+    font-weight: 600;
+    letter-spacing: var(--tracking-title);
+    line-height: var(--lh-title);
+  }
+
+  .mn-404-sub {
+    margin: 0 0 32px;
+    max-width: var(--container-narrow);
+    font-size: var(--fs-lead);
+    line-height: var(--lh-body);
+    color: var(--mn-fg-muted);
+  }
+
+  .mn-404-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .mn-404-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 20px;
+    font-size: var(--fs-small);
+    font-weight: 600;
+    letter-spacing: var(--tracking-title);
+    color: var(--mn-fg);
+    text-decoration: none;
+    border: 1px solid var(--mn-border-strong);
+    border-radius: var(--radius-md);
+    transition: color var(--duration-fast) var(--ease-out),
+                border-color var(--duration-fast) var(--ease-out),
+                background-color var(--duration-fast) var(--ease-out);
+  }
+
+  .mn-404-btn:hover {
+    color: var(--mn-accent-ink);
+    border-color: var(--mn-accent-border);
+  }
+
+  .mn-404-btn-primary {
+    background: var(--mn-accent);
+    color: var(--mn-fg-on-accent);
+    border-color: var(--mn-accent);
+  }
+
+  .mn-404-btn-primary:hover {
+    color: var(--mn-fg-on-accent);
+    border-color: var(--mn-accent);
+    background-color: color-mix(in srgb, var(--mn-accent) 88%, var(--mn-fg));
+  }
+</style>

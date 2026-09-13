@@ -1,0 +1,110 @@
+---
+/**
+ * /privacy — spec §6.6. Short and true: the site sets no cookies and
+ * runs no analytics, plus what the app does and does not send.
+ */
+import Base from '../layouts/Base.astro';
+import Eyebrow from '../components/site/Eyebrow.astro';
+import { SITE } from '../data/site';
+import '../styles/site.css';
+---
+
+<Base>
+  <title>Privacy — Minnow</title>
+  <meta
+    name="description"
+    content="This site sets no cookies and runs no analytics. Here is what Minnow does and does not send."
+  />
+  <link rel="canonical" href={SITE.url + '/privacy'} />
+  <section class="mn-priv" aria-labelledby="privacy-heading">
+    <div class="mn-priv-head">
+      <Eyebrow boxed>PRIVACY</Eyebrow>
+      <h1 id="privacy-heading" class="mn-priv-h1">Privacy</h1>
+      <p class="mn-priv-lead">
+        This site sets no cookies and runs no analytics.
+      </p>
+    </div>
+
+    <div class="mn-priv-body">
+      <h2>What the site sends</h2>
+      <ul>
+        <li>Nothing. No tracking scripts, no fingerprinting, no data leaves your browser. The page you see is static files served to you, and that is the whole picture.</li>
+      </ul>
+
+      <h2>What the app sends</h2>
+      <p>
+        Minnow stores your code, chats, and notes on your disk in
+        <code>~/.minnow</code>. Nothing leaves unless you sent it somewhere yourself, and there is no telemetry or phone-home.
+      </p>
+      <ul>
+        <li>With local models, your code and your prompts stay on your machine.</li>
+        <li>If you connect a cloud provider, the prompt and the context you include go to that provider — the normal trade of using one. There is no other destination.</li>
+        <li>Packaged builds check GitHub Releases for updates; that request carries no code, no chat content, and no personal data.</li>
+      </ul>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .mn-priv {
+    padding: calc(var(--section-y) * 0.75) var(--gutter) var(--section-y);
+  }
+
+  .mn-priv-head,
+  .mn-priv-body {
+    max-width: var(--container-narrow);
+    margin: 0 auto;
+  }
+
+  .mn-priv-body {
+    margin-top: 56px;
+  }
+
+  .mn-priv-h1 {
+    margin: 0 0 16px;
+    font-size: var(--fs-h1);
+    font-weight: 600;
+    letter-spacing: var(--tracking-title);
+    line-height: var(--lh-title);
+  }
+
+  .mn-priv-lead {
+    margin: 0;
+    font-size: var(--fs-lead);
+    line-height: var(--lh-body);
+    color: var(--mn-fg-muted);
+  }
+
+  .mn-priv-body h2 {
+    margin: 0 0 12px;
+    font-size: var(--fs-h3);
+    font-weight: 600;
+    letter-spacing: var(--tracking-title);
+  }
+
+  .mn-priv-body p,
+  .mn-priv-body li {
+    margin: 0 0 12px;
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
+    color: var(--mn-fg-muted);
+  }
+
+  .mn-priv-body p:last-child,
+  .mn-priv-body li:last-child {
+    margin-bottom: 0;
+  }
+
+  .mn-priv-body ul {
+    margin: 0;
+    padding-left: 20px;
+  }
+
+  .mn-priv-body code {
+    font: 400 var(--fs-mono-sm)/1 var(--font-mono);
+    padding: 2px 6px;
+    background: var(--mn-surface-2);
+    border-radius: var(--radius-sm);
+    color: var(--mn-fg);
+  }
+</style>
