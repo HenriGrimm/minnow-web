@@ -2,15 +2,25 @@
 /**
  * Seams — spec §6.2 §2. The thesis, centred at --section-y-lg /
  * --container-narrow. H2 at --fs-h1, the three-sentence body, and the
- * seam diagram in its **static** state: five labelled tiles (Editor ·
- * Tracker · Git · Models · Notes) apart with faint --mn-danger-soft gap
- * fills. The scroll scrub (tiles sliding together, gaps closing, borders
- * resolving into one hairline) arrives in W5-C.
+ * seam diagram scrubbed by `--p` (0→1) over the section (W5-C): five
+ * labelled tiles (Editor · Tracker · Git · Models · Notes) slide
+ * together, the faint --mn-danger-soft gaps close to zero, the five 1px
+ * borders resolve into one continuous hairline rectangle, and the
+ * caption crossfades to "one workspace, one tool set". `transform` only
+ * (gap widths derive from the same `--p`), fully reversible, reduced
+ * motion → static final state. Native `animation-timeline: view()`
+ * drives `--p` where available (seams.ts owns the JS fallback).
  */
 const tiles = ['Editor', 'Tracker', 'Git', 'Models', 'Notes'] as const;
+
+// Tile i sits at x = i·(W+gap) at p=0. A translate of
+// (i−2)·gap·(1−p) closes all five gaps at p=1 and is a pure function of
+// scroll position — the scrub is fully reversible. `--seams-index`
+// carries i to the CSS.
+const slides = tiles.map((_, i) => i - 2);
 ---
 
-<section class="mn-section mn-section-lg mn-section-narrow mn-section-center" aria-labelledby="seams-heading">
+<section class="mn-section mn-section-lg mn-section-narrow mn-section-center mn-seams" data-seams aria-labelledby="seams-heading">
   <div class="mn-section-inner">
     <h2 id="seams-heading" class="mn-seams-h2">
       Minnow exists because the tools are good but the seams between them were not.
@@ -25,7 +35,7 @@ const tiles = ['Editor', 'Tracker', 'Git', 'Models', 'Notes'] as const;
       {
         tiles.map((label, i) => (
           <Fragment>
-            <div class="mn-seams-tile" data-seams-tile><span class="mn-seams-tile-label">{label}</span></div>
+            <div class="mn-seams-tile" data-seams-tile style={`--seams-index: ${slides[i]}`}><span class="mn-seams-tile-label">{label}</span></div>
             {
               i < tiles.length - 1 ? (
                 <div class="mn-seams-gap" data-seams-gap aria-hidden="true"></div>
@@ -36,6 +46,10 @@ const tiles = ['Editor', 'Tracker', 'Git', 'Models', 'Notes'] as const;
           </Fragment>
         ))
       }
+    </div>
+    <div class="mn-seams-caption">
+      <span class="mn-seams-caption-when mn-seams-caption-when-apart">five tools, four seams</span>
+      <span class="mn-seams-caption-when mn-seams-caption-when-together" aria-hidden="true">one workspace, one tool set</span>
     </div>
   </div>
 </section>
@@ -59,18 +73,30 @@ const tiles = ['Editor', 'Tracker', 'Git', 'Models', 'Notes'] as const;
     color: var(--mn-fg-muted);
   }
 
-  /* The static five-tile diagram: tiles apart, faint gap fills. */
-  .mn-seams-diagram {
-    display: flex;
-    align-items: stretch;
-    gap: 16px;
-    margin-top: 48px;
+  /* ---------- Scrub geometry ----------
+     `--p` (0→1) is written by native `animation-timeline: view()` where
+     available, else by one rAF-throttled scroll listener in seams.ts on
+     this section only. Each tile i slides by (i−2)·gap, so at p=1 the
+     five boxes are edge-to-edge and their 1px borders meet in a single
+    continuous hairline rectangle. The tiles' `transform` is the ONLY
+     animated property; the gap widths are the precomputed function
+     gap₀·(1−p) of the same `--p`. */
+
+  .mn-seams {
+    --seams-gap: 16px;
+    --p: 0;
   }
 
   @media (width <= 640px) {
-    .mn-seams-diagram {
-      gap: 10px;
+    .mn-seams {
+      --seams-gap: 10px;
     }
+  }
+
+  .mn-seams-diagram {
+    display: flex;
+    align-items: stretch;
+    margin-top: 48px;
   }
 
   .mn-seams-tile {
@@ -84,6 +110,9 @@ const tiles = ['Editor', 'Tracker', 'Git', 'Models', 'Notes'] as const;
     background: var(--mn-surface-0);
     border: 1px solid var(--mn-border-strong);
     border-radius: var(--radius-md);
+    transform: translateX(
+      calc(var(--seams-index) * var(--seams-gap) * (1 - var(--p)))
+    );
   }
 
   @media (width <= 640px) {
@@ -99,14 +128,68 @@ const tiles = ['Editor', 'Tracker', 'Git', 'Models', 'Notes'] as const;
   }
 
   .mn-seams-gap {
-    flex: 0 0 16px;
+    flex: 0 1 calc(var(--seams-gap) * (1 - var(--p)));
+    min-width: 0;
     background: var(--mn-danger-soft);
     border-radius: 3px;
   }
 
-  @media (width <= 640px) {
-    .mn-seams-gap {
-      flex-basis: 10px;
+  /* ---------- Caption swap ----------
+     Two stacked lines crossfade on `--p`: the "together" line fades in
+     over the "apart" line as the scrub completes. The crossfade is the
+     one non-transform part of the scrub — and it is decoration; the
+     diagram's stable aria-label remains the accessible description, so
+     the swapped line is aria-hidden (no duplicated, no missing). */
+
+  .mn-seams-caption {
+    position: relative;
+    margin-top: 16px;
+  }
+
+  .mn-seams-caption-when {
+    display: block;
+    font: 400 var(--fs-mono-sm)/1.4 var(--font-mono);
+    color: var(--mn-fg-muted);
+  }
+
+  .mn-seams-caption-when-together {
+    position: absolute;
+    inset: 0;
+    opacity: var(--p);
+  }
+
+  /* ---------- Native scrub: `--p` over the section's view lifetime
+     (progress 0 when the section just enters from the bottom, 1 when
+     it leaves at the top). Reversible by construction — the timeline
+     is the scrollbar itself. Gated on `no-preference`: the animation
+     overrides custom properties, so it must not run under reduced
+     motion (the `--p: 1` static state below must win). */
+
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      .mn-seams {
+        animation: mn-seams-scrub linear both;
+        animation-timeline: view();
+        animation-range: entry 0% exit 100%;
+      }
+    }
+  }
+
+  @keyframes mn-seams-scrub {
+    from {
+      --p: 0;
+    }
+    to {
+      --p: 1;
+    }
+  }
+
+  /* ---------- Reduced motion: static final state, zero animation
+     (`--p` is plain 1 — nothing reads a timeline). */
+
+  @media (prefers-reduced-motion: reduce) {
+    .mn-seams {
+      --p: 1;
     }
   }
 </style>
