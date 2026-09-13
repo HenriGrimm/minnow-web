@@ -25,7 +25,7 @@ const {
 } = Astro.props;
 
 const canonicalPath = path === '' || path === '/' ? '' : path.replace(/^\/+/, '').replace(/\/+$/, '');
-const canonical = `${SITE.url}${canonicalPath === '' ? '/' : canonicalPath}`;
+const canonical = canonicalPath === '' ? `${SITE.url}/` : `${SITE.url}/${canonicalPath}`;
 
 // OG meta (spec §5.4): per-page card from /og/<path>.jpg, human-dark colours.
 const ogPath = canonicalPath === '' ? 'index' : canonicalPath;
