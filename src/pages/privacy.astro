@@ -9,13 +9,11 @@ import { SITE } from '../data/site';
 import '../styles/site.css';
 ---
 
-<Base>
-  <title>Privacy — Minnow</title>
-  <meta
-    name="description"
-    content="This site sets no cookies and runs no analytics. Here is what Minnow does and does not send."
-  />
-  <link rel="canonical" href={SITE.url + '/privacy'} />
+<Base
+  title="Privacy — Minnow"
+  description="This site sets no cookies and runs no analytics. Here is what Minnow does and does not send."
+  path="/privacy"
+>
   <section class="mn-priv" aria-labelledby="privacy-heading">
     <div class="mn-priv-head">
       <Eyebrow boxed>PRIVACY</Eyebrow>

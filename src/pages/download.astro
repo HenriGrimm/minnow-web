@@ -153,7 +153,11 @@ const SOURCE_COMMANDS = ['git clone https://github.com/HenriGrimm/Minnow.git', '
 const cloneHref = `https://github.com/${SITE.repo}`;
 ---
 
-<Base>
+<Base
+  title={`Download Minnow v${latest.version}`}
+  description="Installers for Windows, macOS (Apple Silicon + Intel), and Linux. Free forever, open source."
+  path="/download"
+>
   <section class="dl-hero mn-section" style="padding-bottom: clamp(2.5rem, 2rem + 3vw, 4rem);">
     <div class="mn-section-inner">
       <p class="mn-eyebrow">v{latest.version} · {formatDate(latest.publishedAt)}</p>

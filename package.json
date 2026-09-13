@@ -10,7 +10,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "build:brand": "node scripts/build-brand-assets.mjs",
-    "prebuild": "node scripts/build-brand-assets.mjs"
+    "build:llms": "node scripts/build-llms-txt.mjs",
+    "prebuild": "node scripts/build-brand-assets.mjs && node scripts/build-llms-txt.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.3.0",

@@ -7,16 +7,73 @@ import '../styles/theme.css';
 import Nav from '../components/site/Nav.astro';
 import Footer from '../components/site/Footer.astro';
 import SearchPalette from '../components/site/SearchPalette.astro';
+import { SITE } from '../data/site';
+
+interface Props {
+  /** Page <title>; defaults to the site title. */
+  title?: string;
+  /** meta description; defaults to the site description. */
+  description?: string;
+  /** Canonical path relative to the site root (e.g. '/download'); omit for the home page. */
+  path?: string;
+}
+
+const {
+  title = 'minnow.sh',
+  description = 'Minnow — a full agentic development workspace. Open source, and completely yours.',
+  path = '',
+} = Astro.props;
+
+const canonicalPath = path === '' || path === '/' ? '' : path.replace(/\/+$/, '');
+const canonical = `${SITE.url}${canonicalPath === '' ? '/' : canonicalPath}`;
+
+// OG meta (spec §5.4): per-page card from /og/<path>.jpg, human-dark colours.
+const ogPath = canonicalPath === '' ? 'index' : canonicalPath;
+const ogImage = `${SITE.url}/og/${ogPath}.jpg`;
+const ogTitle = title.toLowerCase().endsWith('minnow.sh') || title === 'minnow.sh' ? title : `${title} — minnow.sh`;
+
+// JSON-LD SoftwareApplication (site level, on every page).
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Minnow',
+  url: SITE.url,
+  description,
+  applicationCategory: 'DeveloperApplication',
+  operatingSystem: 'Windows, macOS, Linux',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  license: 'https://www.gnu.org/licenses/agpl-3.0.html',
+  author: { '@type': 'Person', name: SITE.author },
+};
 ---
 <!doctype html>
 <html lang="en" data-theme="human-dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>minnow.sh</title>
-    <meta name="description" content="Minnow — a full agentic development workspace. Open source, and completely yours." />
+    <title>{title}</title>
+    <meta name="description" content={description} />
     <meta name="theme-color" content="#0f0f0f" />
-    <link rel="canonical" href="https://minnow.sh/" />
+    <link rel="canonical" href={canonical} />
+    <!-- Open Graph + Twitter card (spec §5.4). The card is the per-page
+         image from /og/ — glyph + title rendered in the site's own type. -->
+    <meta property="og:site_name" content="minnow.sh" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={ogTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={ogTitle} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={ogTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <!-- llms.txt (spec §5.5): machine-readable product + docs summary. -->
+    <link rel="llms" href={`${SITE.url}/llms.txt`} type="text/plain" />
+    <link rel="llms-full" href={`${SITE.url}/llms-full.txt`} type="text/plain" />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
     <!-- Brand favicon set (spec §5.3). All five live in /brand/ and are
          theme-independent — the SVG favicon carries a prefers-color-scheme
          swap; the raster tiles bake the brand black. -->

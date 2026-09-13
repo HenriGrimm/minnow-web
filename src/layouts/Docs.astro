@@ -29,9 +29,15 @@ interface Props {
   docsKey: string;
   /** Pre-built TOC from the markdown headings (server-side). */
   toc?: TocItem[];
+  /** Doc frontmatter title (from the synced file). */
+  docTitle?: string;
+  /** Doc frontmatter description (from the synced file). */
+  description?: string;
 }
 
-const { docsKey, toc = [] } = Astro.props;
+const { docsKey, toc = [], docTitle, description } = Astro.props;
+// (docsKeyNoExt is declared later, alongside the edit-link logic.)
+const docsTitle = docTitle && docTitle !== 'Untitled' ? `${docTitle} — Minnow docs` : 'Minnow docs';
 
 // ---------------------------------------------------------------------------
 // Nav helpers
@@ -74,7 +80,24 @@ const editUrl = `https://github.com/${SITE.repo}/blob/main/documentation/${editP
 const lastSynced = new Date().toISOString().slice(0, 10);
 ---
 
-<div class="mn-docs-shell">
+<!-- Per-page meta for docs (spec §5.4/§5.5). Lives here — not in Base —
+     because the docs slug + doc frontmatter are only known in this layout.
+     Base supplies the JSON-LD block and the llms links. -->
+  <meta name="description" content={description ?? ''} />
+  <link rel="canonical" href={SITE.url + '/docs/' + docsKeyNoExt} />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content={docsTitle} />
+  <meta property="og:description" content={description ?? ''} />
+  <meta property="og:url" content={SITE.url + '/docs/' + docsKeyNoExt} />
+  <meta property="og:image" content={SITE.url + '/og/docs/' + docsKeyNoExt + '.jpg'} />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={docsTitle} />
+  <meta name="twitter:description" content={description ?? ''} />
+  <meta name="twitter:image" content={SITE.url + '/og/docs/' + docsKeyNoExt + '.jpg'} />
+
+  <div class="mn-docs-shell">
 
   <!-- Left pane: nav tree -->
   <nav class="mn-docs-nav" aria-label="Documentation">

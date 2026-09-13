@@ -62,10 +62,11 @@ const description = `Release notes for Minnow — latest v${latest.version}, ${f
   + (leadLine ? ` ${leadLine.replace(/[#>*`[\]()|_-]/g, '').trim().slice(0, 140)}` : '');
 ---
 
-<Base>
-  <title>Changelog — Minnow</title>
-  <meta name="description" content={description} />
-  <link rel="canonical" href={SITE.url + '/changelog'} />
+<Base
+  title="Changelog — Minnow"
+  description={description}
+  path="/changelog"
+>
   <link
     rel="alternate"
     type="application/rss+xml"

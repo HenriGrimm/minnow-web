@@ -170,7 +170,12 @@ function tocFor(
     </div>
   ) : (
     entry && (
-      <Docs docsKey={entry.id} toc={tocFor(entry)}>
+      <Docs
+        docsKey={entry.id}
+        toc={tocFor(entry)}
+        docTitle={(entry.data as { title?: string }).title}
+        description={(entry.data as { description?: string }).description}
+      >
         <article>
           {renderedContent && <renderedContent.Content />}
         </article>

@@ -13,7 +13,16 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
   },
-  integrations: [mdx(), sitemap(), pagefind()],
+integrations: [
+    mdx(),
+    sitemap({
+      // /og/ cards are generated assets, not pages — keep them out of the
+      // sitemap. The OG images are referenced via robots-adjacent meta, not
+      // indexed.
+      filter: (page) => !page.startsWith('/og/'),
+    }),
+    pagefind(),
+  ],
   markdown: {
     shikiConfig: {
       // Emit CSS variables so syntax colours are mapped onto the site's
