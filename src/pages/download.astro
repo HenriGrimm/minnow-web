@@ -1,0 +1,680 @@
+---
+/**
+ * /download — spec §6.3.
+ *
+ * Release data is fetched at build time by scripts/fetch-releases.mjs
+ * (src/data/releases.json), so there is no client-side rate limit.
+ * The page leads with the asset for the detected platform
+ * (Apple Silicon vs Intel split — the download links differ), lists
+ * every other platform below (never hidden), and handles the
+ * missing-asset case: if the latest release has no build for the
+ * visitor's platform, say so plainly and offer the most recent
+ * release that does.
+ *
+ * The detection runs client-side after hydration; before that the page
+ * renders in the canonical order (Windows, macOS, Linux), which is what
+ * the static build ships. The client swaps the head into "For you".
+ */
+import Base from '../layouts/Base.astro';
+import Button from '../components/site/Button.astro';
+import CodeBlock from '../components/site/CodeBlock.astro';
+import { getLatestRelease, getReleases, type Release, type ReleaseAsset } from '../data/releases';
+import { SITE } from '../data/site';
+
+/* ---------- platform → asset model ----------
+ * The website's user-facing platforms (src/scripts/platform.ts) map onto
+ * the concrete asset architectures the fetch script classifies:
+ *   windows     → win-x64        (NSIS installer)
+ *   macos-*     → darwin-arm64 / darwin-x64 (dmg, plus a zip alternate)
+ *   linux       → linux          (AppImage)
+ */
+
+const PLATFORMS = [
+  {
+    id: 'windows' as const,
+    label: 'Windows',
+    asset: 'win-x64' as const,
+    detail: 'NSIS installer',
+    formats: ['.exe'],
+  },
+  {
+    id: 'mac' as const,
+    label: 'macOS',
+    asset: 'darwin-arm64' as const,
+    detail: 'Apple Silicon (arm64)',
+    formats: ['-arm64.dmg', '-arm64.zip'],
+  },
+  {
+    id: 'mac-intel' as const,
+    label: 'macOS (Intel)',
+    asset: 'darwin-x64' as const,
+    detail: 'Intel (x64)',
+    formats: ['-x64.dmg', '-x86_64.dmg', '-x64.zip', '-x86_64.zip', '-intel.dmg', '-intel.zip'],
+  },
+  {
+    id: 'linux' as const,
+    label: 'Linux',
+    asset: 'linux' as const,
+    detail: 'AppImage',
+    formats: ['.AppImage'],
+  },
+];
+
+const latest: Release = getLatestRelease();
+const history: Release[] = getReleases().filter((r) => r.version !== latest.version);
+
+/** Concrete asset formats available in a release (dmg vs zip, exe, AppImage). */
+function formatsFor(release: Release, formats: string[]): string[] {
+  const present = new Set(
+    release.assets.filter((a) => a.url).map((a) => a.name.toLowerCase()),
+  );
+  return formats.filter((ext) =>
+    [...present].some((name) => name.endsWith(ext.toLowerCase())),
+  );
+}
+
+/** All installable assets for a platform (both the dmg and the zip on macOS). */
+function assetsFor(release: Release, platform: (typeof PLATFORMS)[number]): ReleaseAsset[] {
+  const exts = platform.formats;
+  return release.assets.filter(
+    (a) =>
+      a.url &&
+      !a.name.toLowerCase().endsWith('.blockmap') &&
+      exts.some((ext) => a.name.toLowerCase().endsWith(ext.toLowerCase())),
+  );
+}
+
+/** Most recent release (newest first) that ships any asset for the platform. */
+function mostRecentWith(platform: (typeof PLATFORMS)[number]): Release | null {
+  for (const release of getReleases()) {
+    if (assetsFor(release, platform).length > 0) return release;
+  }
+  return null;
+}
+
+/** Per-platform install notes (spec §6.3). */
+const NOTES: Record<string, string[]> = {
+  windows: [
+    'Windows may show a SmartScreen notice for the unsigned installer: choose **More info**, then **Run anyway**.',
+    'One-time prompt on the first manual install.',
+  ],
+  mac: [
+    'The **.dmg** is the recommended path: open it and drag Minnow into Applications.',
+    'Prefer a plain archive? The **.zip** is the same build, for manual placement.',
+  ],
+  'mac-intel': [
+    'No Intel build ships for the current release.',
+  ],
+  linux: [
+    'Make the AppImage executable, then run it: `chmod +x Minnow-*.AppImage`.',
+    'Tray integration needs AppIndicator / StatusNotifier (standard on KDE; GNOME may need an extension).',
+  ],
+};
+
+/* ---------- checksums: digests where GitHub provides them ---------- */
+function digestHex(digest: string | null): string | null {
+  if (!digest) return null;
+  const m = /^(sha256|sha512):(.+)$/i.exec(digest);
+  return m ? m[2] : digest;
+}
+
+const checksums = latest.assets
+  .filter((a) => a.url && a.digest && !a.name.toLowerCase().endsWith('.blockmap'))
+  .map((a) => ({ name: a.name, hex: digestHex(a.digest) ?? a.digest! }));
+
+/* ---------- publish date ---------- */
+function formatDate(iso: string | null): string {
+  if (!iso) return 'date unknown';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return 'date unknown';
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+}
+
+function formatSize(bytes: number | null): string {
+  if (bytes === null) return '—';
+  const mb = bytes / (1024 * 1024);
+  if (mb >= 1) return `${mb.toLocaleString('en-US', { maximumFractionDigits: 1 })} MB`;
+  const kb = bytes / 1024;
+  return `${kb.toLocaleString('en-US', { maximumFractionDigits: 0 })} KB`;
+}
+
+const SOURCE_COMMANDS = ['git clone https://github.com/HenriGrimm/Minnow.git', 'cd Minnow', 'npm install', 'npm start'].join('\n');
+
+const cloneHref = `https://github.com/${SITE.repo}`;
+---
+
+<Base>
+  <section class="dl-hero mn-section" style="padding-bottom: clamp(2.5rem, 2rem + 3vw, 4rem);">
+    <div class="mn-section-inner">
+      <p class="mn-eyebrow">v{latest.version} · {formatDate(latest.publishedAt)}</p>
+      <h1 class="dl-title">Download Minnow</h1>
+      <p class="dl-lead">
+        Open source, and completely yours. The build below matches the latest release
+        (v{latest.version}); pick the one for your machine, or grab the source.
+      </p>
+      <div class="dl-hero-actions">
+        <Button href="#platforms">See all platforms</Button>
+        <Button href="#source" variant="ghost">Build from source</Button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Per-platform assets (spec §6.3: every platform, never hidden) ============ -->
+  <section id="platforms" class="mn-section mn-section-hairline">
+    <div class="mn-section-inner">
+      <h2 class="dl-h2">Pick your platform</h2>
+      <div class="dl-platforms" data-dl-platforms>
+        {
+          PLATFORMS.map((p) => {
+            const has = formatsFor(latest, p.formats).length > 0;
+            const fallback = !has ? mostRecentWith(p) : null;
+            const shownRelease = has ? latest : fallback;
+            const assets = shownRelease ? assetsFor(shownRelease, p) : [];
+            return (
+              <article
+                class={`dl-card ${has ? 'is-current' : 'is-fallback'}`}
+                data-dl-card
+                data-platform={p.id}
+                data-has={has ? '1' : '0'}
+              >
+                <header class="dl-card-head">
+                  <div class="dl-card-title">
+                    <h3>{p.label}</h3>
+                    <span class="dl-card-detail">{p.detail}</span>
+                  </div>
+                  {has ? (
+                    <span class="dl-chip dl-chip-current">v{latest.version}</span>
+                  ) : (
+                    <span class="dl-chip dl-chip-missing">
+                      Not in v{latest.version}
+                    </span>
+                  )}
+                </header>
+
+                {assets.length > 0 ? (
+                  <ul class="dl-assets">
+                    {assets.map((a, i) => (
+                      <li class="dl-asset">
+                        <a
+                          class="dl-asset-link"
+                          href={a.url}
+                          data-dl-asset
+                          {i === 0 ? 'aria-current' : null}
+                        >
+                          {a.name}
+                        </a>
+                        <span class="dl-asset-meta">
+                          {formatSize(a.size)}
+                          {a.digest ? ` · sha256` : ''}
+                        </span>
+                        {a.digest ? (
+                          <span class="dl-asset-digest" title={digestHex(a.digest) ?? a.digest}>
+                            {digestHex(a.digest)?.slice(0, 12)}…
+                          </span>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p class="dl-none">
+                    {!has
+                      ? 'No build for this platform in the current release.'
+                      : 'No installable build has ever been published for this platform.'}
+                  </p>
+                )}
+
+                {!has && shownRelease ? (
+                  <p class="dl-fallback-line">
+                    Most recent release with a {p.label.toLowerCase()} build:
+                    <a
+                      href={`#release-${shownRelease.version}`}
+                      class="dl-fallback-link"
+                    >
+                      v{shownRelease.version}
+                    </a>
+                    ({formatDate(shownRelease.publishedAt)})
+                  </p>
+                ) : null}
+
+                <ul class="dl-notes">
+                  {(NOTES[p.id] ?? []).map((note) => (
+                    <li>{note}</li>
+                  ))}
+                </ul>
+              </article>
+            );
+          })
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Checksums (spec §6.3: when digests exist) ============ -->
+  {
+    checksums.length > 0 ? (
+      <section id="checksums" class="mn-section mn-section-hairline">
+        <div class="mn-section-inner">
+          <h2 class="dl-h2">Checksums</h2>
+          <p class="dl-lead-sm">
+            SHA-256 digests for the v{latest.version} assets. Verify a download:
+          </p>
+          <CodeBlock code={`shasum -a 256 <downloaded-file>\n# or, on Windows:\ncertutil -hashfile <downloaded-file> SHA256`} lang="bash" class="dl-verify" />
+          <table class="dl-checksums">
+            <thead>
+              <tr>
+                <th>Asset</th>
+                <th>SHA-256</th>
+              </tr>
+            </thead>
+            <tbody>
+              {checksums.map((c) => (
+                <tr>
+                  <td class="dl-checksum-name">{c.name}</td>
+                  <td class="dl-checksum-hex" title={c.hex}>{c.hex.slice(0, 20)}…</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    ) : null
+  }
+
+  <!-- ============ Update channels (spec §6.3: beta channel note) ============ -->
+  <section id="updates" class="mn-section mn-section-hairline">
+    <div class="mn-section-inner">
+      <h2 class="dl-h2">Updates</h2>
+      <p class="dl-lead-sm">
+        Packaged installs check GitHub Releases through electron-updater, on two channels:
+        **Stable** (non-pre-release tags only) and **Beta** (pre-releases included).
+        Choose the channel in <strong>Settings → General → App updates</strong>.
+      </p>
+      <p class="dl-lead-sm">
+        Per-platform feeds ride on the release: <code>latest.yml</code> (Windows),
+        <code>latest-mac.yml</code> (macOS), <code>latest-linux.yml</code> (Linux).
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ Build from source (spec §6.3) ============ -->
+  <section id="source" class="mn-section mn-section-hairline">
+    <div class="mn-section-inner">
+      <h2 class="dl-h2">Build from source</h2>
+      <p class="dl-lead-sm">
+        Runs on any platform. Requires Node.js. The source of truth is
+        <a href={cloneHref} target="_blank" rel="noopener noreferrer">the repository</a>.
+      </p>
+      <CodeBlock code={SOURCE_COMMANDS} lang="bash" />
+      <p class="dl-lead-sm">
+        See <a
+          href={`https://github.com/${SITE.repo}/wiki/Setup-from-source`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Setup from source
+        </a>
+        on the wiki for the full walkthrough.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ Earlier releases ============ -->
+  <section id="releases" class="mn-section mn-section-hairline">
+    <div class="mn-section-inner">
+      <h2 class="dl-h2">Earlier releases</h2>
+      <ul class="dl-history">
+        {
+          history.map((r) => (
+            <li class="dl-history-item" id={`release-${r.version}`}>
+              <a class="dl-history-link" href="#releases">v{r.version}</a>
+              <span class="dl-history-date">{formatDate(r.publishedAt)}</span>
+              <span class="dl-history-assets">
+                {r.assets
+                  .filter((a) => a.url && !a.name.toLowerCase().endsWith('.blockmap'))
+                  .map((a) => a.name)
+                  .join(' · ')}
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <script>
+    /* Client-side platform detection (spec §6.3). The static build renders
+       the cards in canonical order; on hydration, if we detect the visitor's
+       platform, the matching card gets the "For you" chip. */
+    function detectKey(): string | null {
+      if (typeof navigator === 'undefined') return null;
+      const data = (navigator as Navigator & {
+        userAgentData?: { platform?: string; architecture?: string };
+      }).userAgentData;
+      let key: string | null = null;
+      if (data?.platform) {
+        const p = data.platform.toLowerCase();
+        if (p === 'win32' || p === 'windows') key = 'windows';
+        else if (p === 'macos') {
+          const arch = (data.architecture ?? '').toLowerCase();
+          key = arch === 'arm' || arch === 'arm64' ? 'mac' : 'mac-intel';
+        } else if (p === 'linux') key = 'linux';
+      }
+      if (key === null && typeof navigator.userAgent === 'string') {
+        const ua = navigator.userAgent;
+        if (/iPhone|iPad|iPod/.test(ua)) return null;
+        if (/Mac OS X|Macintosh/.test(ua)) key = /arm|silicon/i.test(ua) ? 'mac' : 'mac-intel';
+        else if (/Windows/.test(ua)) key = 'windows';
+        else if (/Linux|Android/i.test(ua)) key = 'linux';
+      }
+      return key;
+    }
+
+    const detected = detectKey();
+    if (detected) {
+      const cards = Array.from(document.querySelectorAll<HTMLElement>('[data-dl-card]'));
+      const match = cards.find((c) => c.dataset.platform === detected);
+      if (match) {
+        const head = match.querySelector<HTMLElement>('.dl-card-head');
+        const chip = match.querySelector<HTMLElement>('.dl-chip');
+        if (head && chip) {
+          const label = document.createElement('span');
+          label.className = 'dl-chip dl-chip-you';
+          label.textContent = 'For you';
+          chip.replaceWith(label);
+          head.prepend(label);
+          match.classList.add('is-detected');
+          match.setAttribute('aria-current', 'true');
+        }
+      }
+    }
+  </script>
+
+<style>
+  .dl-title {
+    margin: 0 0 16px;
+    font-size: var(--fs-h1);
+    font-weight: 600;
+    letter-spacing: var(--tracking-title);
+    line-height: var(--lh-title);
+  }
+
+  .dl-lead {
+    max-width: var(--container-narrow);
+    margin: 0;
+    font-size: var(--fs-lead);
+    line-height: var(--lh-body);
+    color: var(--mn-fg-muted);
+  }
+
+  .dl-lead-sm {
+    max-width: var(--prose);
+    margin: 0 0 20px;
+    font-size: var(--fs-small);
+    line-height: var(--lh-body);
+    color: var(--mn-fg-muted);
+  }
+
+  .dl-lead-sm code {
+    font: 400 var(--fs-mono-sm)/1 var(--font-mono);
+    padding: 2px 6px;
+    background: var(--mn-surface-2);
+    border-radius: var(--radius-sm);
+    color: var(--mn-fg);
+  }
+
+  .dl-lead-sm a {
+    color: var(--mn-accent-ink);
+    text-decoration: none;
+    border-bottom: 1px solid var(--mn-accent-border);
+  }
+
+  .dl-lead-sm strong {
+    color: var(--mn-fg);
+  }
+
+  .dl-hero-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 28px;
+    flex-wrap: wrap;
+  }
+
+  .dl-h2 {
+    margin: 0 0 24px;
+    font-size: var(--fs-h3);
+    font-weight: 600;
+    letter-spacing: var(--tracking-title);
+  }
+
+  .dl-platforms {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .dl-card {
+    padding: 18px 20px;
+    background: color-mix(in srgb, var(--mn-fg) 1.5%, var(--mn-bg));
+    border: 1px solid var(--mn-border);
+    border-radius: var(--radius-md);
+  }
+
+  .dl-card.is-fallback {
+    border-color: var(--mn-warning-border);
+  }
+
+  .dl-card.is-detected {
+    border-color: var(--mn-accent-border);
+  }
+
+  .dl-card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 14px;
+  }
+
+  .dl-card-title {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .dl-card-title h3 {
+    margin: 0;
+    font-size: var(--fs-small);
+    font-weight: 600;
+    letter-spacing: var(--tracking-title);
+  }
+
+  .dl-card-detail {
+    font: 400 var(--fs-mono-sm)/1 var(--font-mono);
+    color: var(--mn-fg-muted);
+  }
+
+  .dl-chip {
+    flex-shrink: 0;
+    padding: 3px 8px;
+    font: 600 var(--fs-label)/1.3 var(--font-mono);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    border: 1px solid var(--mn-border-strong);
+    border-radius: var(--radius-sm);
+    color: var(--mn-fg-muted);
+    white-space: nowrap;
+  }
+
+  .dl-chip-current {
+    color: var(--mn-accent-ink);
+    border-color: var(--mn-accent-border);
+  }
+
+  .dl-chip-missing {
+    color: var(--mn-warning);
+    border-color: var(--mn-warning-border);
+  }
+
+  .dl-chip-you {
+    color: var(--mn-fg-on-accent);
+    background: var(--mn-accent);
+    border-color: var(--mn-accent);
+  }
+
+  .dl-assets {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .dl-asset {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 10px 12px;
+    background: var(--mn-surface-1);
+    border: 1px solid var(--mn-border);
+    border-radius: var(--radius-sm);
+  }
+
+  .dl-asset-link {
+    font: 500 var(--fs-small)/1.2 var(--font-mono);
+    color: var(--mn-fg);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+  }
+
+  .dl-asset-link:hover {
+    border-bottom-color: var(--mn-fg-muted);
+  }
+
+  .dl-asset-meta {
+    font: 400 var(--fs-mono-sm)/1 var(--font-mono);
+    color: var(--mn-fg-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .dl-asset-digest {
+    font: 400 var(--fs-mono-sm)/1 var(--font-mono);
+    color: var(--mn-fg-subtle);
+  }
+
+  .dl-none {
+    margin: 0;
+    font-size: var(--fs-small);
+    color: var(--mn-fg-muted);
+  }
+
+  .dl-fallback-line {
+    margin: 14px 0 0;
+    font-size: var(--fs-small);
+    line-height: var(--lh-body);
+    color: var(--mn-fg-muted);
+  }
+
+  .dl-fallback-link {
+    color: var(--mn-accent-ink);
+    text-decoration: none;
+    font-weight: 600;
+    border-bottom: 1px solid var(--mn-accent-border);
+  }
+
+  .dl-notes {
+    list-style: none;
+    margin: 14px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .dl-notes li {
+    font-size: var(--fs-small);
+    line-height: var(--lh-body);
+    color: var(--mn-fg-muted);
+  }
+
+  .dl-notes li strong {
+    color: var(--mn-fg);
+  }
+
+  .dl-verify {
+    margin: 0 0 20px;
+  }
+
+  .dl-checksums {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .dl-checksums th,
+  .dl-checksums td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--mn-border);
+  }
+
+  .dl-checksums th {
+    font: 600 var(--fs-label)/1.3 var(--font-mono);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--mn-fg-subtle);
+  }
+
+  .dl-checksum-name {
+    font: 400 var(--fs-mono-sm)/1.3 var(--font-mono);
+    color: var(--mn-fg);
+    word-break: break-all;
+  }
+
+  .dl-checksum-hex {
+    font: 400 var(--fs-mono-sm)/1.3 var(--font-mono);
+    color: var(--mn-fg-muted);
+    font-variant-numeric: tabular-nums;
+    word-break: break-all;
+  }
+
+  .dl-history {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .dl-history-item {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--mn-border);
+  }
+
+  .dl-history-item:first-child {
+    padding-top: 0;
+  }
+
+  .dl-history-link {
+    font: 600 var(--fs-small)/1 var(--font-mono);
+    color: var(--mn-fg);
+    text-decoration: none;
+  }
+
+  .dl-history-link:hover {
+    color: var(--mn-accent-ink);
+  }
+
+  .dl-history-date {
+    font: 400 var(--fs-mono-sm)/1 var(--font-mono);
+    color: var(--mn-fg-muted);
+  }
+
+  .dl-history-assets {
+    font: 400 var(--fs-mono-sm)/1.3 var(--font-mono);
+    color: var(--mn-fg-subtle);
+    word-break: break-all;
+  }
+</style>
