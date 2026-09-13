@@ -1,4 +1,12 @@
 ---
+/**
+ * Home — spec §6.2. The full §0–§15 assembly, in order:
+ * §0 Hero · §1 Runs on · §2 The seams · §3 The build loop ·
+ * §4 What it replaces · §5 App deep-dives · §6 Models · §7 Agents
+ * and tools · §8 Open at the seams · §9 Themes · §10 Yours ·
+ * §11 Free forever · §12 Status · §13 FAQ · §14 Final CTA.
+ * The footer (§15) is part of the Base layout.
+ */
 import Base from '../layouts/Base.astro';
 import Hero from '../components/home/Hero.astro';
 import RunsOn from '../components/home/RunsOn.astro';
@@ -13,6 +21,8 @@ import Themes from '../components/home/Themes.astro';
 import Yours from '../components/home/Yours.astro';
 import FreeForever from '../components/home/FreeForever.astro';
 import Status from '../components/home/Status.astro';
+import Faq from '../components/home/Faq.astro';
+import FinalCta from '../components/home/FinalCta.astro';
 ---
 <Base>
   <Hero />
@@ -28,4 +38,6 @@ import Status from '../components/home/Status.astro';
   <Yours />
   <FreeForever />
   <Status />
+  <Faq />
+  <FinalCta />
 </Base>

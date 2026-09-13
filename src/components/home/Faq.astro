@@ -1,0 +1,36 @@
+---
+/**
+ * Faq — spec §6.2 §13. The ten-item accordion on hairline rows,
+ * --container-narrow. The items come from data/faq.ts (voice: plain,
+ * unhurried, no exclamation marks, nothing in the future tense).
+ * The Accordion primitive renders native <details>/<summary> rows,
+ * so the whole section works with JavaScript disabled.
+ */
+import Accordion from '../site/Accordion.astro';
+import Eyebrow from '../site/Eyebrow.astro';
+import { FAQ } from '../../data/faq';
+
+const items = FAQ.map((item) => ({ q: item.question, a: item.answer }));
+---
+
+<section id="faq" class="mn-section mn-section-narrow" aria-labelledby="faq-heading">
+  <div class="mn-section-inner">
+    <Eyebrow boxed>FAQ</Eyebrow>
+    <h2 id="faq-heading" class="mn-faq-h2">
+      Asked before the download.
+    </h2>
+    <Accordion items={items} class="mn-faq" />
+  </div>
+</section>
+
+<style>
+  /* stylelint-disable custom-property-empty-line-before, declaration-empty-line-before */
+
+  .mn-faq-h2 {
+    margin: 0 0 40px;
+    font-size: var(--fs-h2);
+    font-weight: 600;
+    letter-spacing: var(--tracking-title);
+    line-height: var(--lh-title);
+  }
+</style>

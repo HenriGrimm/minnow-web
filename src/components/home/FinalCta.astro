@@ -1,0 +1,118 @@
+---
+/**
+ * FinalCta — spec §6.2 §14. The last section: centred, --section-y-lg.
+ * H2 at --fs-h1 — "Open a repo and start typing." — the lift line that
+ * closes the build loop's "you can also just open a repo and start
+ * typing." The download button (label swapped client-side like the
+ * hero's) and the git clone block with its copy button; the copy is
+ * wired by initCopyButtons() in Base, so it needs no script here.
+ */
+import Button from '../site/Button.astro';
+---
+
+<section class="mn-section mn-section-lg mn-section-center" aria-labelledby="final-cta-heading">
+  <div class="mn-section-inner mn-final-cta-inner">
+    <h2 id="final-cta-heading" class="mn-final-cta-h2">
+      Open a repo and start typing.
+    </h2>
+    <div class="mn-final-cta-actions">
+      <Button href="/download" variant="primary" data-final-cta-download>Download for macOS</Button>
+    </div>
+    <div class="mn-final-cta-clone">
+      <code>git clone https://github.com/HenriGrimm/Minnow.git</code>
+      <button
+        type="button"
+        class="mn-final-cta-copy"
+        data-copy="git clone https://github.com/HenriGrimm/Minnow.git"
+        aria-label="Copy clone command"
+      >
+        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="5" y="5" width="9" height="9" rx="1.5" />
+          <path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5" />
+        </svg>
+        Copy
+      </button>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* stylelint-disable custom-property-empty-line-before, declaration-empty-line-before */
+
+  .mn-final-cta-inner {
+    max-width: var(--container-narrow);
+  }
+
+  .mn-final-cta-h2 {
+    margin: 0 0 40px;
+    font-size: var(--fs-h1);
+    font-weight: 600;
+    letter-spacing: var(--tracking-display);
+    line-height: var(--lh-display);
+  }
+
+  .mn-final-cta-actions {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 28px;
+  }
+
+  /* The clone row — same convention as the hero's: mono command on a
+     hairline strip, copy button on the right. */
+  .mn-final-cta-clone {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 100%;
+    padding: 10px 12px;
+    background: var(--mn-surface-0);
+    border: 1px solid var(--mn-border);
+    border-radius: var(--radius-md);
+  }
+
+  .mn-final-cta-clone code {
+    overflow-x: auto;
+    font: 400 var(--fs-mono-sm)/1.4 var(--font-mono);
+    color: var(--mn-syntax-inline);
+  }
+
+  .mn-final-cta-copy {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    font: 500 var(--fs-label)/1.4 var(--font-ui);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--mn-fg-muted);
+    background: none;
+    border: 1px solid var(--mn-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: color var(--duration-fast) var(--ease-out),
+                border-color var(--duration-fast) var(--ease-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .mn-final-cta-copy:hover {
+      color: var(--mn-fg);
+      border-color: var(--mn-border-strong);
+    }
+  }
+
+  .mn-final-cta-copy.is-copied {
+    color: var(--mn-accent-ink);
+    border-color: var(--mn-accent-border);
+  }
+
+  .mn-final-cta-copy svg {
+    color: currentcolor;
+  }
+</style>
+
+<script>
+  import { detectPlatform, platformLabel } from '../../scripts/platform';
+  const download = document.querySelector<HTMLElement>('[data-final-cta-download]');
+  if (download) download.textContent = platformLabel(detectPlatform());
+</script>
