@@ -1,16 +1,27 @@
 ---
 /**
- * BuildLoop — spec §6.2 §3. The build loop: idea → Plan mode, then the
- * four surfaces the loop runs through (Orchestrator board, Source
- * Control, Issues, Brain). Left list + right screenshot, **static
- * stacked layout** — the pin (sticky viewport, 500vh spacer, cross-fade)
- * arrives in W5-D. Step markers are filled dots, not border-left
- * stripes.
+ * BuildLoop — spec §6.2 §3, W5-D. The build loop: idea → Plan mode, then
+ * the four surfaces the loop runs through (Orchestrator board, Source
+ * Control, Issues, Brain).
+ *
+ * **Pinned layout.** The viewport (left step list + right screenshot
+ * cross-fade) is `position: sticky` inside a `500vh` spacer. The spacer is
+ * plain scroll space — it never intercepts the wheel; the sticky child is
+ * what stays put while the spacer scrolls past. `initBuildLoop()` walks the
+ * active step 1→5 as the user scrolls (filled `--mn-accent` dot + `--mn-fg`
+ * text; inactive `--mn-fg-subtle`), and the right-column screenshots
+ * cross-fade (12px y-offset, 300ms).
+ *
+ * **Reduced motion** (`prefers-reduced-motion: reduce`): the pin is removed
+ * and the spacer collapses, so the five steps render as five ordinary
+ * stacked sections. That collapse is pure CSS (below); `initBuildLoop()`
+ * early-returns so no observers are set up.
  *
  * The four screenshots are loaded through `astro:assets` from
  * `src/assets/screenshots/` (synced by scripts/sync-minnow.mjs) and
  * render inside the AppFrame replica's window chrome, so the loop reads
- * as the app's own windows.
+ * as the app's own windows. Step markers are filled dots, not
+ * border-left stripes.
  */
 import { Image } from 'astro:assets';
 import Eyebrow from '../site/Eyebrow.astro';
@@ -47,10 +58,15 @@ const steps = [
     shot: { src: appBrain, alt: 'The Brain — Markdown wiki, semantic recall, and memories', name: 'Brain' },
   },
 ] as const;
+
+// Screenshots in order (steps 2→5). The "Idea" step (1) has no window —
+// the first frame holds the Orchestrator board, and the cross-fade begins
+// on step 2.
+const shots = steps.filter((s) => s.shot !== null);
 ---
 
 <section class="mn-section mn-section-hairline" aria-labelledby="build-loop-heading">
-  <div class="mn-section-inner mn-build-loop-inner">
+  <div class="mn-build-loop-outer">
     <div class="mn-build-loop-head">
       <Eyebrow boxed>THE BUILD LOOP</Eyebrow>
       <h2 id="build-loop-heading" class="mn-build-loop-h2">
@@ -62,29 +78,42 @@ const steps = [
       </p>
     </div>
 
-    <div class="mn-build-loop-grid">
-      <ol class="mn-build-loop-steps">
-        {
-          steps.map((step, i) => (
-            <li class="mn-build-loop-step" data-build-loop-step>
-              <span class="mn-build-loop-marker" aria-hidden="true">
-                <span class="mn-build-loop-dot"></span>
-              </span>
-              <div class="mn-build-loop-step-body">
-                <span class="mn-build-loop-step-num">{i + 1}</span>
-                <span class="mn-build-loop-step-title">{step.title}</span>
-                <p class="mn-build-loop-step-body-text">{step.body}</p>
-              </div>
-            </li>
-          ))
-        }
-      </ol>
+    <!-- 500vh scroll spacer. Plain space — never intercepts the wheel.
+         The sticky viewport stays put while the spacer scrolls past; the
+     five step zones divide the range so the active step walks 1→5 as
+     the user scrolls. -->
+    <div class="mn-build-loop-spacer">
+      <div class="mn-build-loop-sticky">
+        <ol class="mn-build-loop-steps">
+          {
+            steps.map((step, i) => (
+              <li
+                class="mn-build-loop-step"
+                data-build-loop-step
+                data-step-index={i}
+                aria-current={i === 0 ? 'step' : undefined}
+              >
+                <span class="mn-build-loop-marker" aria-hidden="true">
+                  <span class="mn-build-loop-dot"></span>
+                </span>
+                <div class="mn-build-loop-step-body">
+                  <span class="mn-build-loop-step-num">{i + 1}</span>
+                  <span class="mn-build-loop-step-title">{step.title}</span>
+                  <p class="mn-build-loop-step-body-text">{step.body}</p>
+                </div>
+              </li>
+            ))
+          }
+        </ol>
 
-      <div class="mn-build-loop-shots">
-        {steps
-          .filter((s) => s.shot !== null)
-          .map((s) => (
-            <figure class="mn-build-loop-shot">
+        <div class="mn-build-loop-shots" data-build-loop-shots>
+          {steps.filter((s) => s.shot !== null).map((s, i) => (
+            <figure
+              class="mn-build-loop-shot"
+              data-build-loop-shot
+              data-shot-index={i}
+              data-active-shot={i === 0 ? '' : undefined}
+            >
               <div class="mn-build-loop-shot-frame">
                 <header class="mn-build-loop-shot-chrome">
                   <div class="mn-build-loop-shot-lights" aria-hidden="true">
@@ -110,18 +139,33 @@ const steps = [
               </div>
             </figure>
           ))}
+        </div>
       </div>
-    </div>
 
-    <p class="mn-build-loop-closing">You can also just open a repo and start typing.</p>
+      <!-- One progress zone per step, evenly distributed across the
+           spacer's scroll range. initBuildLoop() watches these with a
+           single IntersectionObserver (viewport-middle band) to derive
+           the active step — no scroll/wheel listener. -->
+      {steps.map((step, i) => (
+        <div
+          class="mn-build-loop-zone"
+          data-build-loop-zone
+          data-zone-index={i}
+          aria-hidden="true"
+        ></div>
+      ))}
+    </div>
   </div>
+
+  <p class="mn-build-loop-closing">You can also just open a repo and start typing.</p>
 </section>
 
 <style>
   /* stylelint-disable custom-property-empty-line-before, declaration-empty-line-before */
 
-  .mn-build-loop-inner {
+  .mn-build-loop-outer {
     max-width: var(--container-wide);
+    margin: 0 auto;
   }
 
   .mn-build-loop-head {
@@ -144,18 +188,33 @@ const steps = [
     color: var(--mn-fg-muted);
   }
 
-  /* Static stacked layout — left list, right screenshot stack. The pin
-     (sticky + 500vh spacer + cross-fade) arrives in W5-D. */
-  .mn-build-loop-grid {
+  /* ---------- Pinned layout: 500vh spacer + sticky viewport ---------- */
+
+  /* The spacer is plain scroll space (500vh ≈ 4 viewports of travel
+     beyond the first). It never intercepts the wheel — the sticky child
+     below stays put while the spacer scrolls past. */
+  .mn-build-loop-spacer {
+    position: relative;
+    height: 500vh;
+  }
+
+  /* The pinned viewport. `position: sticky` keeps it in view while the
+     spacer scrolls; `top`/`height` account for the sticky nav (64px). */
+  .mn-build-loop-sticky {
+    position: sticky;
+    top: 64px;
+    height: calc(100vh - 64px);
     display: grid;
     grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
     gap: 48px 64px;
+    align-items: center;
   }
 
   @media (width <= 900px) {
-    .mn-build-loop-grid {
+    .mn-build-loop-sticky {
       grid-template-columns: 1fr;
-      gap: 40px;
+      gap: 32px;
+      align-content: center;
     }
   }
 
@@ -175,7 +234,8 @@ const steps = [
     gap: 16px;
   }
 
-  /* Filled dot marker — not a border-left stripe. */
+  /* Filled dot marker — not a border-left stripe. Inactive by default
+     (`--mn-fg-subtle`); the active step fills `--mn-accent`. */
   .mn-build-loop-marker {
     flex-shrink: 0;
     display: flex;
@@ -188,6 +248,11 @@ const steps = [
     width: 11px;
     height: 11px;
     border-radius: 50%;
+    background: var(--mn-fg-subtle);
+    transition: background-color 300ms var(--ease-out);
+  }
+
+  .mn-build-loop-step.is-active .mn-build-loop-dot {
     background: var(--mn-accent);
   }
 
@@ -202,6 +267,11 @@ const steps = [
     letter-spacing: var(--tracking-label);
     text-transform: uppercase;
     color: var(--mn-fg-subtle);
+    transition: color 300ms var(--ease-out);
+  }
+
+  .mn-build-loop-step.is-active .mn-build-loop-step-num {
+    color: var(--mn-fg);
   }
 
   .mn-build-loop-step-title {
@@ -210,6 +280,11 @@ const steps = [
     font-size: var(--fs-h3);
     font-weight: 600;
     letter-spacing: var(--tracking-title);
+    color: var(--mn-fg-subtle);
+    transition: color 300ms var(--ease-out);
+  }
+
+  .mn-build-loop-step.is-active .mn-build-loop-step-title {
     color: var(--mn-fg);
   }
 
@@ -220,16 +295,26 @@ const steps = [
     color: var(--mn-fg-muted);
   }
 
-  /* ---------- Right: the four screenshots in window chrome ---------- */
+  /* ---------- Right: the four screenshots, cross-fading ---------- */
 
+  /* Stack all four frames in one cell; they cross-fade on the active
+     step (12px y-offset, 300ms). */
   .mn-build-loop-shots {
-    display: flex;
-    flex-direction: column;
-    gap: 28px;
+    position: relative;
+    display: grid;
   }
 
   .mn-build-loop-shot {
     margin: 0;
+    grid-area: 1 / 1;
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 300ms var(--ease-out), transform 300ms var(--ease-out);
+  }
+
+  .mn-build-loop-shot[data-active-shot] {
+    opacity: 1;
+    transform: translateY(0);
   }
 
   .mn-build-loop-shot-frame {
@@ -292,10 +377,75 @@ const steps = [
     object-fit: cover;
   }
 
+  /* ---------- Progress zones ----------
+     The per-step zones fill the spacer (one grid track each) so the
+     viewport-middle band crosses exactly one zone at a time. They are
+     aria-hidden and empty — pure scroll geometry. */
+  .mn-build-loop-zone {
+    position: absolute;
+    left: 0;
+    right: 0;
+    display: block;
+  }
+
+  .mn-build-loop-zone[data-zone-index='0'] { top: 0; height: 20%; }
+  .mn-build-loop-zone[data-zone-index='1'] { top: 20%; height: 20%; }
+  .mn-build-loop-zone[data-zone-index='2'] { top: 40%; height: 20%; }
+  .mn-build-loop-zone[data-zone-index='3'] { top: 60%; height: 20%; }
+  .mn-build-loop-zone[data-zone-index='4'] { top: 80%; height: 20%; }
+
   .mn-build-loop-closing {
-    margin: 56px 0 0;
+    max-width: var(--container-wide);
+    margin: 56px auto 0;
     font-size: var(--fs-lead);
     line-height: var(--lh-body);
     color: var(--mn-fg-muted);
+  }
+
+  /* ---------- Reduced motion: collapse the pin to stacked sections ----------
+     The sticky viewport and the 500vh spacer are removed, so the five
+     steps render as five ordinary stacked sections. All steps are shown
+     active (filled dot + fg text), all four screenshots stack in normal
+     document flow, and the cross-fade transform/transition is dropped.
+     initBuildLoop() early-returns so no observers are set up. */
+  @media (prefers-reduced-motion: reduce) {
+    .mn-build-loop-spacer {
+      height: auto;
+    }
+
+    .mn-build-loop-sticky {
+      position: static;
+      height: auto;
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+
+    .mn-build-loop-step .mn-build-loop-dot {
+      background: var(--mn-accent);
+      transition: none;
+    }
+
+    .mn-build-loop-step .mn-build-loop-step-num,
+    .mn-build-loop-step .mn-build-loop-step-title {
+      color: var(--mn-fg);
+      transition: none;
+    }
+
+    .mn-build-loop-shots {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .mn-build-loop-shot {
+      grid-area: auto;
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+
+    .mn-build-loop-zone {
+      display: none;
+    }
   }
 </style>
