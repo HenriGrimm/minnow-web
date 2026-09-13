@@ -6,7 +6,7 @@
  * three-pane Docs layout. Also serves as the docs landing index
  * when the URL is /docs (no slug).
  */
-import { getCollection } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 import type { MarkdownHeading } from '@astrojs/markdown-remark';
 import Docs from '../../layouts/Docs.astro';
 import { DOCS_NAV } from '../../content/docs-nav';
@@ -75,6 +75,22 @@ const navRows = flattenNav(DOCS_NAV);
 const lastSynced = new Date().toISOString().slice(0, 10);
 const isIndex = !slugPath;
 const is404 = !!slugPath && !entry;
+
+/**
+ * Render the entry's markdown body into an Astro component.
+ *
+ * `entry.rendered` on a glob-loader DataEntry is a RenderedContent object
+ * ({ html, metadata }), not a renderable component — outputting it directly
+ * stringifies to "[object Object]". `render(entry)` from `astro:content`
+ * (alias for `renderEntry`) builds the proper `Content` component from
+ * `entry.rendered.html` (with image references updated for the entry's
+ * directory) and returns { Content, headings }. We only render when we have
+ * a real entry (the doc page branch).
+ */
+let renderedContent: Awaited<ReturnType<typeof render>> | null = null;
+if (entry) {
+  renderedContent = await render(entry);
+}
 
 /**
  * GitHub-style heading slug, matching what Astro's markdown renderer
@@ -156,7 +172,7 @@ function tocFor(
     entry && (
       <Docs docsKey={entry.id} toc={tocFor(entry)}>
         <article>
-          {entry.rendered}
+          {renderedContent && <renderedContent.Content />}
         </article>
       </Docs>
     )
