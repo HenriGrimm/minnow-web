@@ -44,7 +44,7 @@ const PAGES: Array<{ slug: string; title: string; description?: string }> = [
 ];
 
 /** Shape a doc slug for its card ("minnow.sh — <title>"). */
-function docCard(doc: { title?: string; id: string }): {
+function docCard(doc: { title?: string; description?: string; id: string }): {
   slug: string;
   title: string;
   description?: string;
