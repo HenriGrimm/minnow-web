@@ -33,7 +33,7 @@ const D = (win: SeamsWindow | undefined): SeamsWindow =>
 
 export function initSeams(win?: SeamsWindow): void {
   const w = D(win);
-  const section = w.document.querySelector<HTMLElement>('[data-seams]');
+  const section = w.document.querySelector('[data-seams]') as HTMLElement | null;
   if (!section) return;
 
   // Reduced motion: the diagram renders in its final joined state (CSS),
