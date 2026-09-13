@@ -92,15 +92,25 @@ function mostRecentWith(platform: (typeof PLATFORMS)[number]): Release | null {
   return null;
 }
 
+/**
+ * Fallback for a platform missing from the latest release: the newest
+ * release that has an asset for it, or — if no release ever has one —
+ * the newest release at all, so the missing-asset card can still link
+ * the visitor to release notes and a working, closest platform build.
+ */
+function fallbackFor(platform: (typeof PLATFORMS)[number]): Release {
+  return mostRecentWith(platform) ?? getReleases()[0] ?? latest;
+}
+
 /** Per-platform install notes (spec §6.3). */
 const NOTES: Record<string, string[]> = {
   windows: [
-    'Windows may show a SmartScreen notice for the unsigned installer: choose **More info**, then **Run anyway**.',
+    'Windows may show a SmartScreen notice for the unsigned installer: choose <strong>More info</strong>, then <strong>Run anyway</strong>.',
     'One-time prompt on the first manual install.',
   ],
   mac: [
-    'The **.dmg** is the recommended path: open it and drag Minnow into Applications.',
-    'Prefer a plain archive? The **.zip** is the same build, for manual placement.',
+    'The <strong>.dmg</strong> is the recommended path: open it and drag Minnow into Applications.',
+    'Prefer a plain archive? The <strong>.zip</strong> is the same build, for manual placement.',
   ],
   'mac-intel': [
     'No Intel build ships for the current release.',
@@ -164,14 +174,13 @@ const cloneHref = `https://github.com/${SITE.repo}`;
     <div class="mn-section-inner">
       <h2 class="dl-h2">Pick your platform</h2>
       <div class="dl-platforms" data-dl-platforms>
-        {
-          PLATFORMS.map((p) => {
-            const has = formatsFor(latest, p.formats).length > 0;
-            const fallback = !has ? mostRecentWith(p) : null;
-            const shownRelease = has ? latest : fallback;
-            const assets = shownRelease ? assetsFor(shownRelease, p) : [];
-            return (
-              <article
+        {PLATFORMS.map((p) => {
+          const has = formatsFor(latest, p.formats).length > 0;
+          const exactFallback = !has ? mostRecentWith(p) : null;
+          const shownRelease = has ? latest : fallbackFor(p);
+          const assets = shownRelease ? assetsFor(shownRelease, p) : [];
+          return (
+            <article
                 class={`dl-card ${has ? 'is-current' : 'is-fallback'}`}
                 data-dl-card
                 data-platform={p.id}
@@ -193,13 +202,13 @@ const cloneHref = `https://github.com/${SITE.repo}`;
 
                 {assets.length > 0 ? (
                   <ul class="dl-assets">
-                    {assets.map((a, i) => (
+                    {assets.map((a) => (
                       <li class="dl-asset">
                         <a
                           class="dl-asset-link"
                           href={a.url}
                           data-dl-asset
-                          {i === 0 ? 'aria-current' : null}
+                          aria-current
                         >
                           {a.name}
                         </a>
@@ -223,16 +232,32 @@ const cloneHref = `https://github.com/${SITE.repo}`;
                   </p>
                 )}
 
-                {!has && shownRelease ? (
+                {!has ? (
                   <p class="dl-fallback-line">
-                    Most recent release with a {p.label.toLowerCase()} build:
-                    <a
-                      href={`#release-${shownRelease.version}`}
-                      class="dl-fallback-link"
-                    >
-                      v{shownRelease.version}
-                    </a>
-                    ({formatDate(shownRelease.publishedAt)})
+                    {exactFallback ? (
+                      <>
+                        Most recent release with a {p.label.toLowerCase()} build:
+                        <a
+                          href={`#release-${exactFallback.version}`}
+                          class="dl-fallback-link"
+                        >
+                          v{exactFallback.version}
+                        </a>
+                        ({formatDate(exactFallback.publishedAt)})
+                      </>
+                    ) : (
+                      <>
+                        No build for this platform exists in any release — build from
+                        source below, or take the closest packaged build:
+                        <a
+                          href={`#release-${shownRelease.version}`}
+                          class="dl-fallback-link"
+                        >
+                          v{shownRelease.version}
+                        </a>
+                        ({formatDate(shownRelease.publishedAt)})
+                      </>
+                    )}
                   </p>
                 ) : null}
 
@@ -241,10 +266,9 @@ const cloneHref = `https://github.com/${SITE.repo}`;
                     <li>{note}</li>
                   ))}
                 </ul>
-              </article>
-            );
-          })
-        }
+            </article>
+          );
+        })}
       </div>
     </div>
   </section>
@@ -286,7 +310,7 @@ const cloneHref = `https://github.com/${SITE.repo}`;
       <h2 class="dl-h2">Updates</h2>
       <p class="dl-lead-sm">
         Packaged installs check GitHub Releases through electron-updater, on two channels:
-        **Stable** (non-pre-release tags only) and **Beta** (pre-releases included).
+        <strong>Stable</strong> (non-pre-release tags only) and <strong>Beta</strong> (pre-releases included).
         Choose the channel in <strong>Settings → General → App updates</strong>.
       </p>
       <p class="dl-lead-sm">
