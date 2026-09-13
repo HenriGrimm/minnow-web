@@ -1,0 +1,270 @@
+---
+/**
+ * Docs.astro — three-pane docs layout (spec §6.4).
+ *
+ * Left:   nav tree from docs-nav.ts (validated against synced files at build).
+ * Middle: content column capped at --prose (72ch).
+ * Right:  TOC generated from h2/h3 in the rendered body (built client-side,
+ *         since the rendered markdown is only known after the slot renders).
+ *
+ * The page passes `docsKey` — the synced file key (e.g. 'manual/README.md')
+ * relative to src/content/docs — so the "Edit this page" link can point at
+ * the exact file in the Minnow repo.
+ */
+import { DOCS_NAV } from '../content/docs-nav';
+import { SITE } from '../data/site';
+import '../styles/prose.css';
+
+export interface TocItem {
+  /** Heading depth (2 or 3). */
+  level: number;
+  /** Plain-text heading content. */
+  text: string;
+  /** Anchor id on the heading. */
+  id: string;
+}
+
+interface Props {
+  /** Synced file key relative to src/content/docs, e.g. 'manual/README.md'. */
+  docsKey: string;
+  /** Pre-built TOC from the markdown headings (server-side). */
+  toc?: TocItem[];
+}
+
+const { docsKey, toc = [] } = Astro.props;
+
+// ---------------------------------------------------------------------------
+// Nav helpers
+// ---------------------------------------------------------------------------
+
+interface NavNode {
+  label: string;
+  section?: boolean;
+  page?: string;
+  children?: NavNode[];
+}
+
+/** Convert a nav page key (e.g. 'manual/README.md') → /docs/ URL. */
+function pageUrl(page: string): string {
+  return `/docs/${page.replace(/\.md$/i, '')}`;
+}
+
+/** Recursively flatten a nav node into { url, label, depth, section } rows. */
+function flattenNav(nodes: NavNode[]): Array<{
+  url?: string;
+  label: string;
+  depth: number;
+  section: boolean;
+}> {
+  const rows: Array<{ url?: string; label: string; depth: number; section: boolean }> = [];
+  for (const node of nodes) {
+    rows.push({ url: node.page ? pageUrl(node.page) : undefined, label: node.label, depth: 0, section: !!node.section && !node.page });
+    if (node.children) rows.push(...flattenNav(node.children).map((r) => ({ ...r, depth: r.depth + 1 })));
+  }
+  return rows;
+}
+
+const navRows = flattenNav(DOCS_NAV);
+// The sync script renames ROADMAP.md → roadmap, so the edit link for
+// that one file must point back to the uppercase original.
+const docsKeyNoExt = docsKey.replace(/\.md$/i, '');
+const editPath =
+  docsKeyNoExt === 'roadmap' ? 'ROADMAP.md' : `${docsKeyNoExt}.md`;
+const editUrl = `https://github.com/${SITE.repo}/blob/main/documentation/${editPath}`;
+const lastSynced = new Date().toISOString().slice(0, 10);
+---
+
+<div class="mn-docs-shell">
+
+  <!-- Left pane: nav tree -->
+  <nav class="mn-docs-nav" aria-label="Documentation">
+    <ul class="mn-docs-nav-list">
+      {
+        navRows.map((row) =>
+          row.section ? (
+            <li class="mn-docs-nav-section" style={`--mn-docs-depth: ${row.depth}`}>
+              {row.label}
+            </li>
+          ) : (
+            <li>
+              <a
+                href={row.url}
+                class:list={['mn-docs-nav-link']}
+                style={`--mn-docs-depth: ${row.depth}`}
+                data-docs-nav-link
+                aria-current={row.url === `/docs/${docsKey.replace(/\.md$/i, '')}` ? 'page' : undefined}
+              >
+                {row.label}
+              </a>
+            </li>
+          )
+        )
+      }
+    </ul>
+  </nav>
+
+  <!-- Middle pane: content column capped at --prose -->
+  <div class="mn-docs-content">
+    <div id="mn-docs-prose" class="mn-prose">
+      <slot />
+    </div>
+
+    <!-- Docs page footer: edit link + last synced line -->
+    <div class="mn-docs-footer">
+      <a href={editUrl} target="_blank" rel="noopener noreferrer">
+        Edit this page
+      </a>
+      <span>Last synced: {lastSynced}</span>
+    </div>
+  </div>
+
+  <!-- Right pane: TOC, built server-side from the markdown headings. -->
+  <aside class="mn-docs-toc" aria-label="On this page">
+    <div class="mn-docs-toc-list" id="mn-docs-toc-list">
+      {
+        toc.map((item) => (
+          <a
+            href={`#${item.id}`}
+            class="mn-docs-toc-link"
+            style={`--mn-docs-toc-depth: ${item.level - 2}`}
+          >
+            {item.text}
+          </a>
+        ))
+      }
+    </div>
+  </aside>
+
+</div>
+
+<script>
+  // Highlight the active nav item (server already set aria-current; keep both).
+  const currentPath = window.location.pathname;
+  document.querySelectorAll<HTMLAnchorElement>('[data-docs-nav-link]').forEach((a) => {
+    if (a.pathname === currentPath) a.classList.add('is-active');
+  });
+</script>
+
+<style>
+  /* Three-pane shell: left nav | content | right TOC. */
+  .mn-docs-shell {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 2.5rem;
+    max-width: var(--container);
+    margin: 0 auto;
+    padding: 3rem var(--gutter) 4rem;
+    align-items: start;
+  }
+
+  /* Left pane: nav tree, sticky under the site nav. */
+  .mn-docs-nav {
+    width: 220px;
+    position: sticky;
+    top: 80px;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+  }
+
+  .mn-docs-nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .mn-docs-nav-section {
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    font-weight: 600;
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--mn-fg-muted);
+    margin: 1em 0 0.3em;
+    padding-left: calc(var(--mn-docs-depth, 0) * 12px);
+  }
+
+  .mn-docs-nav-link {
+    display: block;
+    padding: 0.3em 0;
+    font-size: var(--fs-small);
+    color: var(--mn-fg-muted);
+    text-decoration: none;
+    line-height: 1.4;
+    padding-left: calc(var(--mn-docs-depth, 0) * 12px);
+  }
+
+  .mn-docs-nav-link:hover {
+    color: var(--mn-fg);
+  }
+
+  .mn-docs-nav-link.is-active,
+  .mn-docs-nav-link[aria-current='page'] {
+    color: var(--mn-accent-ink);
+    font-weight: 600;
+  }
+
+  /* Middle pane: content column. */
+  .mn-docs-content {
+    min-width: 0;
+  }
+
+  /* Right pane: TOC, sticky. */
+  .mn-docs-toc {
+    width: 200px;
+    position: sticky;
+    top: 80px;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+  }
+
+  .mn-docs-toc-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .mn-docs-toc-list::before {
+    content: 'On this page';
+    display: block;
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    font-weight: 600;
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--mn-fg-muted);
+    margin-bottom: 0.75em;
+  }
+
+  .mn-docs-toc-link {
+    display: block;
+    padding: 0.25em 0;
+    font-size: var(--fs-small);
+    color: var(--mn-fg-muted);
+    text-decoration: none;
+    line-height: 1.4;
+    padding-left: calc(var(--mn-docs-toc-depth, 0) * 12px);
+  }
+
+  .mn-docs-toc-link:hover {
+    color: var(--mn-fg);
+  }
+
+  /* Empty page (no h2/h3): hide the TOC pane. */
+  .mn-docs-toc:has(.mn-docs-toc-list:not(:has(a))) {
+    display: none;
+  }
+
+  /* Responsive: collapse to a single column on narrow viewports. */
+  @media (max-width: 1100px) {
+    .mn-docs-shell {
+      grid-template-columns: 1fr;
+    }
+
+    .mn-docs-nav,
+    .mn-docs-toc {
+      position: static;
+      width: auto;
+      max-height: none;
+    }
+  }
+</style>

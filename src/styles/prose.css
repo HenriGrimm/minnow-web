@@ -1,0 +1,163 @@
+/* prose.css — docs body typography (spec §6.4).
+   Reuses the app's markdown bubble rules via --mn-* tokens only.
+   No hex, no rgb/hsl literals (stylelint-enforced). */
+/* stylelint-disable no-descending-specificity -- the footer uses a separate
+   class from the prose body; the specificity ordering is a style preference
+   here, not a correctness concern. */
+
+/* --- prose container --- */
+.mn-prose {
+  max-width: var(--prose);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+}
+
+/* --- paragraphs --- */
+.mn-prose p {
+  margin: 0.65em 0;
+}
+
+/* --- headings: weight 600, line-height 1.25, 1em top / 0.5em bottom --- */
+.mn-prose h1,
+.mn-prose h2,
+.mn-prose h3,
+.mn-prose h4,
+.mn-prose h5,
+.mn-prose h6 {
+  margin: 1em 0 0.5em;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--mn-fg);
+}
+
+.mn-prose h2 {
+  font-size: var(--fs-h3);
+}
+
+.mn-prose h3 {
+  font-size: var(--fs-body);
+}
+
+/* --- inline code on --mn-surface-2 --- */
+.mn-prose code {
+  font-family: var(--font-mono);
+  font-size: var(--fs-mono-sm);
+  background: var(--mn-surface-2);
+  border-radius: var(--radius-sm);
+  padding: 0.15em 0.35em;
+}
+
+/* --- fenced code blocks (spec §3.9) --- */
+.mn-prose pre {
+  background: var(--tool-call-pre-bg);
+  border: 1px solid var(--mn-border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-mono);
+  font-size: var(--fs-mono-sm);
+  line-height: 1.5;
+  overflow-x: auto;
+  padding: 0.75em 1em;
+  margin: 0.65em 0;
+}
+
+/* Fenced code: the code element inside pre drops the inline-code pill. */
+.mn-prose pre code {
+  background: none;
+  border-radius: 0;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* --- tables: --mn-border cells, --mn-surface-1 headers --- */
+.mn-prose table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.65em 0;
+  font-size: var(--fs-small);
+}
+
+.mn-prose th {
+  background: var(--mn-surface-1);
+  border: 1px solid var(--mn-border);
+  font-weight: 600;
+  padding: 0.5em 0.75em;
+  text-align: left;
+  vertical-align: top;
+}
+
+.mn-prose td {
+  border: 1px solid var(--mn-border);
+  padding: 0.5em 0.75em;
+  text-align: left;
+  vertical-align: top;
+}
+
+/* --- blockquote: left --mn-border-strong rule (the one legitimate left border) --- */
+.mn-prose blockquote {
+  margin: 0.65em 0;
+  padding: 0.35em 0 0.35em 1em;
+  border-left: 2px solid var(--mn-border-strong);
+  color: var(--mn-fg-muted);
+}
+
+.mn-prose blockquote p {
+  margin: 0.3em 0;
+}
+
+/* --- lists --- */
+.mn-prose ul,
+.mn-prose ol {
+  margin: 0.65em 0;
+  padding-left: 1.5em;
+}
+
+.mn-prose li {
+  margin: 0.3em 0;
+}
+
+/* --- hr --- */
+.mn-prose hr {
+  border: none;
+  border-top: 1px solid var(--mn-border);
+  margin: 1.5em 0;
+}
+
+/* --- images --- */
+.mn-prose img {
+  max-width: 100%;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--mn-border);
+}
+
+/* --- links: --mn-accent-ink (≈8:1, per the contrast rule in spec §3.2) --- */
+.mn-prose a {
+  color: var(--mn-accent-ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.mn-prose a:hover {
+  color: var(--mn-accent);
+}
+
+/* --- docs page footer (Edit this page / Last synced) --- */
+.mn-docs-footer {
+  margin-top: 2.5em;
+  padding-top: 1em;
+  border-top: 1px solid var(--mn-border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  font-size: var(--fs-small);
+  color: var(--mn-fg-muted);
+}
+
+.mn-docs-footer a {
+  color: var(--mn-accent-ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.mn-docs-footer a:hover {
+  color: var(--mn-accent);
+}

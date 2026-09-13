@@ -1,0 +1,214 @@
+---
+/**
+ * [...slug].astro — docs routes (spec §6.4).
+ *
+ * Renders each synced doc from the docs content collection in the
+ * three-pane Docs layout. Also serves as the docs landing index
+ * when the URL is /docs (no slug).
+ */
+import { getCollection } from 'astro:content';
+import type { MarkdownHeading } from '@astrojs/markdown-remark';
+import Docs from '../../layouts/Docs.astro';
+import { DOCS_NAV } from '../../content/docs-nav';
+import { SITE } from '../../data/site';
+
+interface NavNode {
+  label: string;
+  section?: boolean;
+  page?: string;
+  children?: NavNode[];
+}
+
+function pageUrl(page: string): string {
+  return `/docs/${page.replace(/\.md$/i, '')}`;
+}
+
+function flattenNav(
+  nodes: NavNode[],
+  depth = 0
+): Array<{ label: string; url?: string; section: boolean; depth: number }> {
+  const rows: Array<{ label: string; url?: string; section: boolean; depth: number }> = [];
+  for (const node of nodes) {
+    rows.push({
+      label: node.label,
+      url: node.page ? pageUrl(node.page) : undefined,
+      section: !!node.section && !node.page,
+      depth,
+    });
+    if (node.children) rows.push(...flattenNav(node.children, depth + 1));
+  }
+  return rows;
+}
+
+const allDocs = await getCollection('docs');
+
+// ---------------------------------------------------------------------------
+// getStaticPaths — enumerate every synced doc plus the /docs landing index.
+// ---------------------------------------------------------------------------
+
+export async function getStaticPaths() {
+  const docs = await getCollection('docs');
+  const paths: Array<{ params: { slug: string } }> = [{ params: { slug: '' } }]; // /docs landing index
+  for (const doc of docs) {
+    // doc.id is e.g. 'manual/README.md'; slug is the path minus the .md.
+    const slug = doc.id.replace(/\.md$/i, '');
+    paths.push({ params: { slug } });
+  }
+  return paths;
+}
+
+const { slug } = Astro.params;
+const slugPath = (slug ?? '').replace(/\/+$/, '');
+
+// Resolve the collection entry. The id is the file path relative to
+// src/content/docs (e.g. 'manual/README.md'); the URL slug is the same
+// path minus the .md (e.g. 'manual/README').
+let entry = null;
+if (slugPath) {
+  entry =
+    allDocs.find((d) => d.id === `${slugPath}.md`) ??
+    allDocs.find((d) => d.id === slugPath) ??
+    null;
+}
+
+const navRows = flattenNav(DOCS_NAV);
+const lastSynced = new Date().toISOString().slice(0, 10);
+const isIndex = !slugPath;
+const is404 = !!slugPath && !entry;
+
+/**
+ * GitHub-style heading slug, matching what Astro's markdown renderer
+ * emits as the heading id.
+ */
+/**
+ * Build the TOC server-side from the markdown body so it works with
+ * JS disabled. Scans for h2/h3 headings (outside code fences), strips
+ * inline formatting for the label, and generates the anchor id the
+ * same way the rendered HTML will.
+ */
+function tocFor(
+  doc: (typeof allDocs)[number]
+): Array<{ level: number; text: string; id: string }> {
+  const headings = doc.rendered?.metadata?.headings as
+    | MarkdownHeading[]
+    | undefined;
+  if (!headings) return [];
+  return headings
+    .filter((h) => h.depth === 2 || h.depth === 3)
+    .map((h) => ({ level: h.depth, text: h.text, id: h.slug }));
+}
+---
+
+{
+  isIndex ? (
+    <div class="mn-docs-shell mn-docs-shell--index">
+      <div class="mn-docs-content">
+        <div class="mn-prose">
+          <h1>Documentation</h1>
+          <p>
+            The Minnow manual, contributor guides, and plugin authoring notes. Synced from
+            <a href={`${SITE.repoUrl}/tree/main/documentation`} target="_blank" rel="noopener noreferrer">
+              documentation/
+            </a>
+            in the Minnow repo.
+          </p>
+          <nav aria-label="Docs index" class="mn-docs-index-nav">
+            <ul class="mn-docs-index-list">
+              {
+                navRows.map((row) =>
+                  row.section ? (
+                    <li class="mn-docs-index-section" style={`--mn-docs-depth: ${row.depth}`}>
+                      {row.label}
+                    </li>
+                  ) : (
+                    <li style={`--mn-docs-depth: ${row.depth}`}>
+                      <a href={row.url} class="mn-docs-index-link">
+                        {row.label}
+                      </a>
+                    </li>
+                  )
+                )
+              }
+            </ul>
+          </nav>
+          <div class="mn-docs-footer">
+            <span>Last synced: {lastSynced}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  ) : is404 ? (
+    <div class="mn-docs-shell mn-docs-shell--index">
+      <div class="mn-docs-content">
+        <div class="mn-prose">
+          <h1>This page swam off.</h1>
+          <p>
+            No synced doc lives at <code>{slugPath}</code>. It may not exist in the Minnow repo
+            yet, or it may have been renamed.
+          </p>
+          <p>
+            <a href="/docs">Back to the docs index</a> · <a href="/">Home</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  ) : (
+    entry && (
+      <Docs docsKey={entry.id} toc={tocFor(entry)}>
+        <article>
+          {entry.rendered}
+        </article>
+      </Docs>
+    )
+  )
+}
+---
+
+<style>
+  .mn-docs-shell--index {
+    display: grid;
+    grid-template-columns: 1fr;
+    max-width: var(--container);
+    margin: 0 auto;
+    padding: 3rem var(--gutter) 4rem;
+  }
+
+  .mn-docs-index-nav {
+    margin: 1em 0;
+  }
+
+  .mn-docs-index-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 0.25rem 2rem;
+  }
+
+  .mn-docs-index-section {
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    font-weight: 600;
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--mn-fg-muted);
+    margin: 1em 0 0.3em;
+    padding-left: calc(var(--mn-docs-depth, 0) * 12px);
+    grid-column: 1 / -1;
+  }
+
+  .mn-docs-index-link {
+    display: block;
+    padding: 0.3em 0;
+    font-size: var(--fs-small);
+    color: var(--mn-fg-muted);
+    text-decoration: none;
+    line-height: 1.4;
+    padding-left: calc(var(--mn-docs-depth, 0) * 12px);
+  }
+
+  .mn-docs-index-link:hover {
+    color: var(--mn-fg);
+  }
+</style>
