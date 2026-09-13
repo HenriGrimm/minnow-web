@@ -17,6 +17,7 @@
 import { Image } from 'astro:assets';
 import Eyebrow from '../site/Eyebrow.astro';
 import Glyph from '../icons/Glyph.astro';
+import QuickEdit from './QuickEdit.astro';
 import shotCode from '../../assets/screenshots/app-code.png';
 import shotSourceControl from '../../assets/screenshots/app-source-control.png';
 import shotOrchestrator from '../../assets/screenshots/app-orchestrator.png';
@@ -160,7 +161,9 @@ const dives: readonly Dive[] = [
               </header>
               {/* W5-E mount slot: the Quick Edit demo mounts into
                   #deepdives-code-demo and takes over the frame body.
-                  The screenshot stays as the no-JS first paint. */}
+                  The screenshot stays as the no-JS first paint — it is
+                  hidden (display:none) only when JS is available and the
+                  demo is present; with no JS the screenshot is the paint. */}
               <div
                 class="mn-dive-shot-img"
                 {...(dive.demoSlot ? { id: 'deepdives-code-demo' } : {})}
@@ -172,7 +175,11 @@ const dives: readonly Dive[] = [
                   height={875}
                   loading="lazy"
                   decoding="async"
+                  {...(dive.demoSlot
+                    ? { class: 'mn-dive-shot-img--has-demo' }
+                    : {})}
                 />
+                {dive.demoSlot ? <QuickEdit /> : ''}
               </div>
             </div>
           </figure>
@@ -344,5 +351,17 @@ const dives: readonly Dive[] = [
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+
+  /* ---------- W5-E: the Quick Edit demo in the Code slot ----------
+     The screenshot is the no-JS first paint (visible in the static
+     HTML). The QuickEdit demo mounts alongside it and, once the
+     IntersectionObserver fires, the demo takes the frame body. The
+     screenshot is kept (display:none) so the no-JS path still has a
+     paint; the demo's own CSS handles the reduced-motion / static
+     final state. */
+
+  .mn-dive-shot-img--has-demo .mn-quickedit {
+    width: 100%;
   }
 </style>

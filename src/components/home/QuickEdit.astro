@@ -1,0 +1,283 @@
+---
+/**
+ * QuickEdit — spec §6.2 §5, W5-E. The Quick Edit demo, dropped into the
+ * Code deep-dive's mount slot. A small code block where a plain-English
+ * comment is typed, then the `Tab` chip flashes and the line is replaced
+ * by the real code.
+ *
+ * Plays **once** on first view: one IntersectionObserver adds `.is-in`
+ * and unobserves immediately — the same contract as the reveal
+ * primitive (spec §4.2: re-animation is decoration, nothing re-plays on
+ * scroll-up). The animation is plain CSS keyframes gated on `.is-in`, so
+ * `prefers-reduced-motion: reduce` renders the final state (real code)
+ * statically with no JS at all.
+ *
+ * Layout note: the comment line (first typed) and the code line (the
+ * result of Quick Edit) flow in the same box, one after the other. The
+ * comment is the visible "before" state; the code is the "after". At the
+ * accept beat the comment hides (visibility, box retained) and the code
+ * line appears — an instant swap with no layout shift, because both lines
+ * sit in the same grid cell.
+ */
+
+// The line as first typed: a plain-English comment.
+const COMMENT_LINE = '// make the retry logic back off';
+// The line after Quick Edit accepts the fix (`Tab`).
+const CODE_LINE = 'await sleep(base * 2 ** attempt);';
+const COMMENT_CHARS = COMMENT_LINE.length;
+---
+
+<div
+  class="mn-quickedit"
+  data-quickedit
+  aria-label="Quick Edit — a plain-English comment in the editor is replaced by real code with the Tab key"
+>
+  <span class="mn-quickedit-tabchip" aria-hidden="true">
+    <span class="mn-quickedit-tabkey">Tab</span>
+    <span class="mn-quickedit-tabarrow">⇥</span>
+  </span>
+  <div class="mn-quickedit-block" tabindex="0">
+    <span
+      class="mn-quickedit-line mn-quickedit-line-comment"
+      style={`--mn-quickedit-chars: ${COMMENT_CHARS}`}
+    >
+      <span class="mn-quickedit-text">{COMMENT_LINE}</span><span
+        class="mn-quickedit-caret"
+        aria-hidden="true"
+      ></span>
+    </span>
+    <span class="mn-quickedit-line mn-quickedit-line-code">{CODE_LINE}</span>
+  </div>
+</div>
+
+<style>
+  /* stylelint-disable custom-property-empty-line-before, declaration-empty-line-before */
+
+  /* ---------- The demo box ---------- */
+
+  .mn-quickedit {
+    position: relative;
+    background: var(--mn-surface-0);
+    border: 1px solid var(--mn-border);
+    border-radius: var(--radius-lg);
+  }
+
+  /* ---------- The code block ----------
+     The two lines share one grid cell (grid-template-areas), so the box
+     is sized by the wider of the two and the comment→code swap is an
+     instant `visibility` change with zero layout shift. */
+
+  .mn-quickedit-block {
+    display: grid;
+    grid-template-areas: 'line';
+    margin: 0;
+    background: var(--tool-call-pre-bg);
+    border: 1px solid var(--mn-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+
+  .mn-quickedit-line {
+    grid-area: line;
+    justify-self: start;
+    display: block;
+    white-space: pre;
+    padding: 14px 16px;
+    font: 400 var(--fs-mono-sm)/1.7 var(--font-mono);
+  }
+
+  .mn-quickedit-line-comment {
+    position: relative;
+    color: var(--mn-fg-subtle);
+    font-style: italic;
+  }
+
+  /* The caret sits inline at the end of the revealed comment text; it
+     blinks while typing and rests (hidden) in the final state. */
+
+  .mn-quickedit-caret {
+    display: inline-block;
+    width: 7px;
+    height: 1.05em;
+    vertical-align: text-bottom;
+    margin-left: 1px;
+    background: var(--mn-accent);
+  }
+
+  .mn-quickedit-line-code {
+    color: var(--mn-syntax-inline);
+  }
+
+  /* The Tab chip: bottom-right of the block. Invisible at rest and
+     while the comment is typing; it flashes in for the accept beat,
+     then rests. The chip is aria-hidden — the demo carries its own
+     aria-label. */
+
+  .mn-quickedit-tabchip {
+    position: absolute;
+    right: 14px;
+    bottom: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px;
+    opacity: 0;
+    font: 500 var(--fs-mono-sm)/1.4 var(--font-mono);
+    color: var(--mn-fg-on-accent);
+    background: var(--mn-accent);
+    border-radius: var(--radius-sm);
+    pointer-events: none;
+  }
+
+  /* =====================================================================
+     Motion (W5-E) — plays once on first view, then rests.
+     Sequence (all timed from the moment `.is-in` is added):
+       0ms    the caret starts blinking; the comment line types by
+              stepping `width` (the caret rides the end of the text);
+       ~1.5s  the Tab chip flashes in, the code line appears (instant
+              swap — the comment hides, the code shows);
+       ~2.6s  the chip fades out and rests; the code line stays.
+     All timing is CSS keyframes gated on `.is-in`. Under reduced
+     motion nothing below runs — the media query at the end renders the
+     final state statically.
+     ===================================================================== */
+
+  /* Gated on `html[data-mn-motion]` (set by the script when JS runs) so
+     the no-JS path shows the final state (real code) immediately — the
+     typing/swap is decoration and must not hide the code. */
+  @media (prefers-reduced-motion: no-preference) {
+    html[data-mn-motion] .mn-quickedit .mn-quickedit-line-comment {
+      max-width: 0;
+      overflow: clip;
+    }
+
+    html[data-mn-motion] .mn-quickedit .mn-quickedit-line-code {
+      visibility: hidden;
+    }
+
+    /* The comment line types on by stepping `width`, then at the accept
+       beat it hides (visibility) so the code line — in the same grid
+       cell — is the visible line. Two animations, same element. */
+    html[data-mn-motion] .mn-quickedit.is-in .mn-quickedit-line-comment {
+      animation:
+        mn-quickedit-type 1200ms steps(var(--mn-quickedit-chars, 34), end) both,
+        mn-quickedit-swap 1ms linear 1500ms both;
+    }
+
+    /* The caret blinks (opacity only) once the demo is in view. */
+    html[data-mn-motion] .mn-quickedit.is-in .mn-quickedit-caret {
+      animation: mn-quickedit-caret-blink 900ms steps(2, jump-none) infinite;
+    }
+
+    /* The code line appears at the accept beat and stays. It starts
+       hidden (visibility: hidden above); this animation makes it
+       visible at 1500ms and holds. */
+    html[data-mn-motion] .mn-quickedit.is-in .mn-quickedit-line-code {
+      animation: mn-quickedit-code 1ms linear 1500ms both;
+    }
+
+    /* The Tab chip flashes in at the accept beat, then rests (opacity
+       0). `animation-fill-mode: both` keeps it invisible before and
+       after the flash. */
+    html[data-mn-motion] .mn-quickedit.is-in .mn-quickedit-tabchip {
+      animation: mn-quickedit-chip 1100ms linear 1500ms both;
+    }
+  }
+
+  @keyframes mn-quickedit-type {
+    from { max-width: 0; }
+    to { max-width: 100%; }
+  }
+
+  @keyframes mn-quickedit-caret-blink {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+
+  @keyframes mn-quickedit-chip {
+    0% { opacity: 0; }
+    10% { opacity: 1; }
+    70% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  @keyframes mn-quickedit-code {
+    from { visibility: hidden; }
+    to { visibility: visible; }
+  }
+
+  @keyframes mn-quickedit-swap {
+    from { visibility: visible; }
+    to { visibility: hidden; }
+  }
+
+  /* =====================================================================
+     Reduced motion — static final state, zero animation.
+     The comment line is fully revealed, the caret rests hidden, the
+     code line (the real result of Quick Edit) is the visible line.
+     No JS is needed here; the CSS is the final paint.
+     ===================================================================== */
+
+  @media (prefers-reduced-motion: reduce) {
+    /* The typing/swap is skipped; the code line (the real result of
+       Quick Edit) is the visible line. The comment is hidden. */
+    .mn-quickedit .mn-quickedit-line-comment {
+      visibility: hidden;
+    }
+
+    .mn-quickedit .mn-quickedit-caret {
+      display: none;
+    }
+
+    .mn-quickedit .mn-quickedit-line-code {
+      visibility: visible;
+    }
+  }
+
+  /* The no-JS path (JS disabled) — the code line is the visible line,
+     the comment is hidden. This is the same as the reduced-motion
+     state, because both skip the typing/swap. */
+  html:not([data-mn-motion]) .mn-quickedit .mn-quickedit-line-comment {
+    visibility: hidden;
+  }
+
+  html:not([data-mn-motion]) .mn-quickedit .mn-quickedit-caret {
+    display: none;
+  }
+
+  html:not([data-mn-motion]) .mn-quickedit .mn-quickedit-line-code {
+    visibility: visible;
+  }
+</style>
+
+<script>
+  // Signal that JS is running so the CSS gates the typing/swap on it
+  // (the no-JS path shows the final state — the real code — immediately;
+  // the typing is decoration and must not hide it).
+  document.documentElement.setAttribute('data-mn-motion', '');
+
+  // Plays once on first view: one IntersectionObserver adds `.is-in` and
+  // unobserves immediately — the same contract as the reveal primitive
+  // (spec §4.2). Reduced motion → the CSS renders the final state with
+  // no JS, so this is a no-op there.
+  const root = document.querySelector<HTMLElement>('[data-quickedit]');
+  if (!root) {
+    // SPA navigation path: Astro remounts the script on each page load.
+    document.addEventListener('astro:page-load', () => {
+      const el = document.querySelector<HTMLElement>('[data-quickedit]');
+      el?.classList.add('is-in');
+    });
+  } else {
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          (entry.target as HTMLElement).classList.add('is-in');
+          io.unobserve(entry.target); // no re-play on scroll-up
+        }
+      },
+      { rootMargin: '0px 0px -12% 0px', threshold: 0.01 },
+    );
+    io.observe(root);
+  }
+</script>

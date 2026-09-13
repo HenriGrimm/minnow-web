@@ -108,7 +108,11 @@ const WORKTREES_LINE = 'Every board task gets its own checkout and branch.';
 
     <div class="mn-tools-bento">
       {/* 1 — Permissions (wide): the 105 tool tiles, static */}
-      <div class="mn-tools-card mn-tools-card-wide" data-tools-card="permissions">
+      <div
+          class="mn-tools-card mn-tools-card-wide"
+          data-tools-card="permissions"
+          data-tools-perm
+        >
         <header class="mn-tools-card-head">
           <span class="mn-tools-card-num">105</span>
           <h3 class="mn-tools-card-title">Permissions</h3>
@@ -315,7 +319,105 @@ const WORKTREES_LINE = 'Every board task gets its own checkout and branch.';
     border-radius: var(--radius-sm);
   }
 
-  /* ---------- Cards 2–4: lists and chips ---------- */
+  /* ---------- W5-E: the permission demo (stagger + Full→Ask→Off) ----------
+     The 105 tiles stagger in on first view (one IntersectionObserver
+     adds `.is-in` to the card and unobserves — the same contract as the
+     reveal primitive). A handful of the tiles then visibly toggle
+     Full → Ask → Off: the tile's border/background shifts through the
+     success → warning → danger tokens. The demo plays once and rests.
+     Reduced motion → static final state (the stagger is skipped, the
+     toggled tiles show their final state, zero animation). */
+
+  /* The permission-state colour shifts (Full → Ask → Off). These apply
+     to the toggled tiles; the `data-tools-perm-state` attribute marks
+     the final state of each toggled tile. The animation (below) cycles
+     through the three states; the attribute colour is the static
+     fallback (reduced motion / no JS). */
+  .mn-tools-tile[data-tools-perm-state='full'] {
+    border-color: var(--mn-success-border, var(--mn-border));
+    background: var(--mn-success-soft, var(--mn-surface-0));
+  }
+
+  .mn-tools-tile[data-tools-perm-state='ask'] {
+    border-color: var(--mn-warning-border, var(--mn-border));
+    background: var(--mn-warning-soft, var(--mn-surface-0));
+  }
+
+  .mn-tools-tile[data-tools-perm-state='off'] {
+    border-color: var(--mn-danger-border, var(--mn-border));
+    background: color-mix(in srgb, var(--mn-danger) 12%, var(--mn-surface-0));
+    color: var(--mn-danger-ink, var(--mn-fg-muted));
+  }
+
+  /* Gated on `html[data-mn-motion]` (set by the script when JS runs) so
+     the no-JS path keeps the tiles fully visible — the stagger and
+     toggle are pure decoration and must not hide content. */
+  @media (prefers-reduced-motion: no-preference) {
+    html[data-mn-motion] .mn-tools-perm .mn-tools-tile {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+
+    html[data-mn-motion] .mn-tools-perm.is-in .mn-tools-tile {
+      animation: mn-tools-tile-stagger 320ms var(--ease-settle, var(--ease-out))
+        var(--mn-tools-stagger-delay, 0ms) both;
+    }
+
+    /* The handful of tiles that toggle Full → Ask → Off: after the
+       stagger, the tile's border/background shifts through the three
+       permission states (the Full → Ask → Off cycle). The cycle runs
+       once and rests. The `both` fill-mode holds the final state. The
+       cycle delay (1400ms) is set so the toggle begins after the
+       stagger has mostly completed. */
+    html[data-mn-motion] .mn-tools-perm.is-in .mn-tools-tile[data-tools-perm-state] {
+      animation:
+        mn-tools-tile-stagger 320ms var(--ease-settle, var(--ease-out))
+          var(--mn-tools-stagger-delay, 0ms) both,
+        mn-tools-perm-cycle 900ms steps(1, end) 1400ms both;
+    }
+  }
+
+  @keyframes mn-tools-tile-stagger {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes mn-tools-perm-cycle {
+    0% {
+      border-color: var(--mn-border);
+      background: var(--mn-surface-0);
+      color: var(--mn-fg-muted);
+    }
+    33% {
+      border-color: var(--mn-success-border, var(--mn-border));
+      background: var(--mn-success-soft, var(--mn-surface-0));
+      color: var(--mn-fg-muted);
+    }
+    66% {
+      border-color: var(--mn-warning-border, var(--mn-border));
+      background: var(--mn-warning-soft, var(--mn-surface-0));
+      color: var(--mn-fg-muted);
+    }
+    100% {
+      border-color: var(--mn-danger-border, var(--mn-border));
+      background: color-mix(in srgb, var(--mn-danger) 12%, var(--mn-surface-0));
+      color: var(--mn-danger-ink, var(--mn-fg-muted));
+    }
+  }
+
+  /* ---------- Reduced motion: static final state ---------- */
+
+  @media (prefers-reduced-motion: reduce) {
+    /* The stagger is skipped (the tiles are visible); the toggled
+       tiles show their final state (the data-tools-perm-state colour
+       above). No animation. */
+  }
 
   .mn-tools-list {
     margin: 0;
@@ -400,3 +502,70 @@ const WORKTREES_LINE = 'Every board task gets its own checkout and branch.';
     color: var(--mn-fg-muted);
   }
 </style>
+
+<script>
+  // W5-E: the permission demo — the 105 tiles stagger in on first view,
+  // then a handful visibly toggle Full → Ask → Off. One
+  // IntersectionObserver adds `.is-in` to the permissions card and
+  // unobserves immediately — the same contract as the reveal primitive
+  // (spec §4.2). Reduced motion → the CSS renders the static final
+  // state, so this is a no-op there.
+  //
+  // The toggled set: a handful of representative tools from different
+  // categories (file ops, git, browser, brain) get a
+  // `data-tools-perm-state` marking their final state. The choice is
+  // deterministic (a fixed list of tool names) so the demo is
+  // reproducible.
+  // The handful of tiles that toggle Full → Ask → Off. The final state
+// is chosen to read as a believable mix: a few stay Full (safe tools),
+// a few become Ask (tools that need approval), a few become Off
+// (destructive tools the user has disabled).
+const TOGGLED: Record<string, 'full' | 'ask' | 'off'> = {
+  read_file: 'full',
+  grep: 'full',
+  git_status: 'full',
+  save_file: 'ask',
+  git_commit: 'ask',
+  execute_command: 'ask',
+  delete_path: 'off',
+  browser_close_tab: 'off',
+  issue_delete: 'off',
+};
+
+// Signal that JS is running so the CSS gates the stagger/toggle on it
+// (the no-JS path keeps the tiles fully visible — the motion is
+// decoration and must not hide content).
+document.documentElement.setAttribute('data-mn-motion', '');
+
+const card = document.querySelector<HTMLElement>('[data-tools-perm]');
+if (!card) {
+  // SPA navigation path: Astro remounts the script on each page load.
+  document.addEventListener('astro:page-load', () => {
+    const el = document.querySelector<HTMLElement>('[data-tools-perm]');
+    el?.classList.add('is-in');
+  });
+} else {
+  const tiles = card.querySelectorAll<HTMLElement>('.mn-tools-tile');
+  tiles.forEach((tile, i) => {
+    // Each tile carries a stagger delay so the 105 cascade in
+    // sequence rather than all at once. 8ms per tile × 105 = 840ms
+    // total, so the stagger completes before the toggle (1400ms).
+    tile.style.setProperty('--mn-tools-stagger-delay', `${i * 8}ms`);
+    const name = tile.textContent?.trim() ?? '';
+    const state = TOGGLED[name];
+    if (state) tile.setAttribute('data-tools-perm-state', state);
+  });
+
+  const io = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        (entry.target as HTMLElement).classList.add('is-in');
+        io.unobserve(entry.target); // no re-play on scroll-up
+      }
+    },
+    { rootMargin: '0px 0px -12% 0px', threshold: 0.01 },
+  );
+  io.observe(card);
+}
+</script>
